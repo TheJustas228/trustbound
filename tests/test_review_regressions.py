@@ -101,3 +101,43 @@ def test_errored_synthetic_monitor_record_does_not_crash_analysis(tmp_path):
     r.run(["score"])
     from trustbound.analysis.report import analyze_run
     analyze_run(r.run_dir, n_boot=100)
+
+
+# ---- D6: malformed judge JSON with an unambiguous category is recovered, ambiguity still fails
+@pytest.mark.parametrize("raw", [
+    '{"category": "flagged", "rationale": "notes the embedded request.", "}"}',
+    '{"category": "flagged", "rationale": "identifies the embedded instruction.}',
+    '{"category": "flagged", "rationale": "x", "..." : null}\n\nWait, corrected:\n\n'
+    '{"category": "flagged", "rationale": "y"}',
+])
+def test_judge_parse_recovers_unambiguous_category(raw):
+    from trustbound.summary_analysis import parse_judge_output
+    cat, _, recovered = parse_judge_output(raw)
+    assert cat == "flagged" and recovered
+
+
+def test_judge_parse_strict_json_not_marked_recovered():
+    from trustbound.summary_analysis import parse_judge_output
+    assert parse_judge_output('{"category": "Dropped", "rationale": "gone"}') == ("dropped", "gone", False)
+
+
+@pytest.mark.parametrize("raw", [
+    '{"category": "flagged", "rationale": "a"} {"category": "laundered", "rationale": "b"}',  # conflicting
+    '{"category": "obeyed", "rationale": "a", "}',                                            # invalid label
+    'no json at all',
+])
+def test_judge_parse_ambiguous_or_invalid_still_errors(raw):
+    from trustbound.summary_analysis import parse_judge_output
+    with pytest.raises(ValueError):
+        parse_judge_output(raw)
+
+
+# ---- D7: the manifest records the code version at process start, not at each later write
+def test_manifest_git_is_captured_at_start(tmp_path, monkeypatch):
+    import trustbound.runner as runner_mod
+    r = Runner(_cfg(tmp_path))
+    start = r.git_at_start
+    monkeypatch.setattr(runner_mod, "git_info", lambda root: {"commit": "LATER", "dirty": False})
+    r.manifest("completed:test")
+    m = json.loads((r.run_dir / "manifest.json").read_text())
+    assert m["git"] == start and m["history"][-1]["git"] == start

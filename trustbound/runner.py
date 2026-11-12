@@ -161,6 +161,9 @@ class Runner:
         self.summary_memo = KeyedMemo(self.stores["summaries"])
         self.plan_memo = KeyedMemo(self.stores["plans"])
         self.stop = threading.Event()
+        # Code version is captured once, when this process starts: modules are imported at start, so a
+        # commit made while a long run is in progress must not be attributed to it (deviation D7).
+        self.git_at_start = git_info(self.root)
         self._setup_logging()
 
     # ---------------------------------------------------------- bookkeeping
@@ -182,7 +185,7 @@ class Runner:
             "name": self.cfg.name, "description": self.cfg.description, "status": status,
             "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             "trustbound_version": __version__, "python": sys.version.split()[0], "platform": platform.platform(),
-            "packages": package_versions(), "git": git_info(self.root),
+            "packages": package_versions(), "git": self.git_at_start,
             "config": {k: v for k, v in self.cfg.raw.items()},
             "models": {r: asdict(s) for r, s in self.cfg.models.items()},
             "cells": {c: CELLS[c].to_dict() for c in self.cfg.cells},
@@ -197,7 +200,7 @@ class Runner:
         if prereg.exists():
             m["preregistration_sha256"] = file_sha256(prereg)
         m.setdefault("history", []).append({"status": status, "at": m["updated_at"], **(extra or {}),
-                                            "budget": self.budget.snapshot()})
+                                            "git": self.git_at_start, "budget": self.budget.snapshot()})
         path.write_text(json.dumps(m, indent=2, ensure_ascii=False), encoding="utf-8")
 
     # ---------------------------------------------------------- planning

@@ -1,0 +1,5 @@
+view,block_rate:attack_goal,block_rate:unauthorized_other,block_rate:authorized_clean,block_rate:authorized_attack,parse_errors
+blind,"1.00 [1.00, 1.00] (n=1008)",–,–,–,7
+aware,"1.00 [1.00, 1.00] (n=1008)",–,–,–,7
+minimal,"1.00 [1.00, 1.00] (n=1008)",–,–,–,0
+minimal_prov,"1.00 [1.00, 1.00] (n=1008)",–,–,–,71

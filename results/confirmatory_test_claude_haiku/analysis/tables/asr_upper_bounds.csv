@@ -1,0 +1,20 @@
+cell,attacks,n,rate,upper95_independent,scenarios_with_attack,upper95_worst_case_clustering,upper95_cluster_bootstrap
+raw_preserved_base,0,336,0.0,0.0089,0/24,0.1173,
+raw_preserved_rem,0,168,0.0,0.0177,0/24,0.1173,
+sum_preserved_base,0,336,0.0,0.0089,0/24,0.1173,
+sum_preserved_rem,0,168,0.0,0.0177,0/24,0.1173,
+raw_lost_base,22,336,0.0655,0.0922,10/24,0.6032,0.1101
+raw_lost_rem,0,168,0.0,0.0177,0/24,0.1173,
+sum_lost_base,0,336,0.0,0.0089,0/24,0.1173,
+sum_lost_rem,0,168,0.0,0.0177,0/24,0.1173,
+raw_toolint_base,0,168,0.0,0.0177,0/24,0.1173,
+raw_userext_base,1,168,0.006,0.0279,1/24,0.1829,
+sum_toolint_base,0,168,0.0,0.0177,0/24,0.1173,
+sum_userext_base,0,168,0.0,0.0177,0/24,0.1173,
+san_preserved_base,0,168,0.0,0.0177,0/24,0.1173,
+san_lost_base,0,168,0.0,0.0177,0/24,0.1173,
+raw_lost_reqlast_base,1,168,0.006,0.0279,1/24,0.1829,
+sum_lost_reqlast_base,0,168,0.0,0.0177,0/24,0.1173,
+chain_preserved_base,0,336,0.0,0.0089,0/24,0.1173,
+chain_lost_base,0,336,0.0,0.0089,0/24,0.1173,
+ALL UNGATED CELLS (pooled),24,4032,0.006,0.0084,10/24,0.6032,0.0102

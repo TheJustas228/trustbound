@@ -1,0 +1,5 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+U1: Utility: summary vs raw (preserved),raw_preserved_base,sum_preserved_base,96,24,1.0,0.9375,-0.0625,-0.14583333333333334,0.0,0.25021749782502173,0,6,0.03125,
+U2: Utility: lost vs preserved (summary),sum_preserved_base,sum_lost_base,96,24,0.9375,0.9583333333333334,0.020833333333333332,-0.041666666666666664,0.08333333333333333,1.0,4,2,0.6875,
+U3: Utility: chain lost vs preserved,chain_preserved_base,chain_lost_base,96,24,0.7916666666666666,0.7604166666666666,-0.03125,-0.16666666666666666,0.10416666666666667,0.7794322056779432,10,13,0.6776394844055176,
+U4: Utility: reminder vs baseline (raw preserved),raw_preserved_base,raw_preserved_rem,48,24,1.0,1.0,0.0,0.0,0.0,1.0,0,0,1.0,

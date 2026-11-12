@@ -1,8 +1,8 @@
 {
   "name": "confirmatory_test_claude_haiku",
   "description": "Preregistered confirmatory run (Amendment 1), Claude Haiku 5.5 in all roles.",
-  "status": "completed:authz",
-  "updated_at": "2026-11-12T03:26:53+0100",
+  "status": "finished",
+  "updated_at": "2026-11-12T04:47:57+0100",
   "trustbound_version": "2.0.0",
   "python": "3.12.3",
   "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
@@ -17,7 +17,7 @@
     "pyyaml": "6.0.3"
   },
   "git": {
-    "commit": "a5618752ed8dc0e85ca4d896c632e0b5addf0af4",
+    "commit": "e39f72e57e91bd441398bfd9f6c535fb3af8b4a8",
     "dirty": true
   },
   "config": {
@@ -444,11 +444,11 @@
   "prompt_fingerprint": "494df7c05d7c1f07f927f4de37caf32eb92184607ceaf2a1fad53252eb49029e",
   "pricing_source": "OpenAI: https://developers.openai.com/api/docs/pricing (retrieved 2026-11-12); Anthropic: Claude API pricing table (claude-api skill, cached 2026-11-03)",
   "budget_this_invocation": {
-    "ceiling_usd": 20.0,
-    "spent_usd": 0.003004,
-    "n_paid_calls": 24,
-    "input_tokens": 9115,
-    "output_tokens": 4185
+    "ceiling_usd": 0.5,
+    "spent_usd": 0.0,
+    "n_paid_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0
   },
   "preregistration_sha256": "a05c8699f1fc8f7af0e904ba3b1a1ee307835721395bb0102c54109174ba5a67",
   "history": [
@@ -479,6 +479,161 @@
         "n_paid_calls": 24,
         "input_tokens": 9115,
         "output_tokens": 4185
+      }
+    },
+    {
+      "status": "completed:actors",
+      "at": "2026-11-12T04:18:54+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 3.839446,
+        "n_paid_calls": 11335,
+        "input_tokens": 17230482,
+        "output_tokens": 4232796
+      }
+    },
+    {
+      "status": "completed:monitors",
+      "at": "2026-11-12T04:41:47+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 5.19734,
+        "n_paid_calls": 18343,
+        "input_tokens": 23705873,
+        "output_tokens": 5653506
+      }
+    },
+    {
+      "status": "completed:judge",
+      "at": "2026-11-12T04:44:26+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 5.372161,
+        "n_paid_calls": 19519,
+        "input_tokens": 24902539,
+        "output_tokens": 5763814
+      }
+    },
+    {
+      "status": "completed:score",
+      "at": "2026-11-12T04:44:27+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 5.372161,
+        "n_paid_calls": 19519,
+        "input_tokens": 24902539,
+        "output_tokens": 5763814
+      }
+    },
+    {
+      "status": "finished",
+      "at": "2026-11-12T04:44:27+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 5.372161,
+        "n_paid_calls": 19519,
+        "input_tokens": 24902539,
+        "output_tokens": 5763814
+      }
+    },
+    {
+      "status": "started",
+      "at": "2026-11-12T04:44:41+0100",
+      "stages": [
+        "score"
+      ],
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:score",
+      "at": "2026-11-12T04:44:42+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "finished",
+      "at": "2026-11-12T04:44:42+0100",
+      "budget": {
+        "ceiling_usd": 20.0,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "started",
+      "at": "2026-11-12T04:47:56+0100",
+      "stages": [
+        "judge",
+        "score"
+      ],
+      "git": {
+        "commit": "e39f72e57e91bd441398bfd9f6c535fb3af8b4a8",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 0.5,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:judge",
+      "at": "2026-11-12T04:47:56+0100",
+      "git": {
+        "commit": "e39f72e57e91bd441398bfd9f6c535fb3af8b4a8",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 0.5,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:score",
+      "at": "2026-11-12T04:47:57+0100",
+      "git": {
+        "commit": "e39f72e57e91bd441398bfd9f6c535fb3af8b4a8",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 0.5,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "finished",
+      "at": "2026-11-12T04:47:57+0100",
+      "git": {
+        "commit": "e39f72e57e91bd441398bfd9f6c535fb3af8b4a8",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 0.5,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
       }
     }
   ]

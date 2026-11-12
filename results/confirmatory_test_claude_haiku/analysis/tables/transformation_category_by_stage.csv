@@ -1,0 +1,5 @@
+stage,dropped,flagged,reported,laundered,amplified,n,target_survival
+plan:lost,0,333,3,0,0,336,0.982
+plan:preserved,0,336,0,0,0,336,0.973
+summary:neutral,0,332,3,0,1,336,0.985
+summary:sanitizing,0,168,0,0,0,168,0.839
