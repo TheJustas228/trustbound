@@ -30,7 +30,7 @@ whether **provenance-aware defenses** stop unauthorized actions without breaking
 | Statistics: cluster bootstrap, scenario-level sign-flip tests, Holm, GEE, AUROC, power simulation | `trustbound/analysis/` |
 | Preregistration | `PREREGISTRATION.md` |
 | Docs: literature review, methodology, threat model & limitations, report | `docs/` |
-| Phase 1 pilot, preserved unchanged | `legacy/phase1/` |
+| Phase 1 pilot (original code, cases, and results) | `legacy/phase1/` |
 
 ## Setup (Linux / WSL, Python ≥ 3.10)
 
@@ -80,7 +80,7 @@ python scripts/annotation.py export results/<run>       # blinded sheet for huma
 ## Reproducing reported results without API calls
 
 Each run directory contains:
-- `manifest.json`: git commit, dataset hash, prompt fingerprint, models, package versions, cost
+- `manifest.json`: git commit, dataset hash, prompt fingerprint, models, package versions, cost (git hashes predate a history rewrite; translate them with `docs/commit_map.md`)
 - `trajectories.jsonl`: every actor message and tool call
 - `summaries.jsonl` and `plans.jsonl`
 - `monitor.jsonl` and `judgments.jsonl`
