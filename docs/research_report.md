@@ -7,7 +7,7 @@
 | Item | Status | Evidence |
 |---|---|---|
 | Literature review (75 retrieved and verified references) | **Completed** | `docs/literature_review.md`, `docs/references.json` |
-| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 65 automated tests | **Completed** | `trustbound/`, `tests/` |
+| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 66 automated tests | **Completed** | `trustbound/`, `tests/` |
 | Benchmark: 32 scenarios × 9 variants = 288 cases, dev/test split | **Completed.** No independent human review | `data/benchmark/`, `docs/benchmark.md` |
 | Phase 1 pilot (8 cases, gpt-4.1-mini, label-only "summary") | **Completed, preliminary** | `legacy/phase1/` |
 | Dev-split pilots v1–v3 (8 scenarios, gpt-4.1-mini) and Claude Haiku 5.5 dev pilot | **Completed, exploratory.** Used for design and debugging; not confirmatory | `results/pilot_dev_v{1,2,3}/`, `results/pilot_dev_claude_haiku/` |
@@ -649,7 +649,7 @@ See `docs/threat_model.md` §4 for the full list. The most important:
 ## 12. Reproducibility
 
 See `README.md`. In short:
-- `pytest -q` (65 tests, no API calls)
+- `pytest -q` (66 tests, no API calls)
 - `python -m trustbound run <config>`, which resumes from checkpoint and replays cached responses
 - `python -m trustbound analyze results/<run>`, which regenerates all tables and figures from saved
   trajectories (seeded bootstrap; two consecutive runs produce identical tables)

@@ -38,7 +38,7 @@ whether **provenance-aware defenses** stop unauthorized actions without breaking
 cd trustbound-starter
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt        # exact versions used: requirements-lock.txt
-pytest -q                              # 65 unit/integration tests, no API calls
+pytest -q                              # 66 unit/integration tests, no API calls
 ```
 
 For real-model runs, put your API key(s) in a gitignored `.env` file, typed in your own
