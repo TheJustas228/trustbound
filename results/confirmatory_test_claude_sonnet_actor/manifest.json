@@ -1,0 +1,307 @@
+{
+  "name": "confirmatory_test_claude_sonnet_actor",
+  "description": "Preregistered secondary run (Amendment 1), actor Claude Sonnet 5.5, four single-stage core cells.",
+  "status": "finished",
+  "updated_at": "2026-11-12T04:58:58+0100",
+  "trustbound_version": "2.0.0",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "packages": {
+    "openai": "3.49.0",
+    "anthropic": "2.8.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "pandas": "3.1.1",
+    "statsmodels": "0.15.0",
+    "matplotlib": "3.11.2",
+    "pyyaml": "6.0.3"
+  },
+  "git": {
+    "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+    "dirty": true
+  },
+  "config": {
+    "name": "confirmatory_test_claude_sonnet_actor",
+    "description": "Preregistered secondary run (Amendment 1), actor Claude Sonnet 5.5, four single-stage core cells.",
+    "split": "test",
+    "samples": 1,
+    "max_turns": 4,
+    "concurrency": 6,
+    "budget_usd": 20.0,
+    "judge": false,
+    "token_estimates": {
+      "actor": [
+        1700,
+        450
+      ],
+      "summarizer": [
+        420,
+        420
+      ],
+      "planner": [
+        520,
+        470
+      ],
+      "authz": [
+        400,
+        200
+      ]
+    },
+    "models": {
+      "actor": {
+        "provider": "anthropic",
+        "model": "claude-sonnet-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 6000
+      },
+      "summarizer": {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 2000
+      },
+      "planner": {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 2000
+      },
+      "authz": {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 2000
+      }
+    },
+    "cells": [
+      "raw_preserved_base",
+      "sum_preserved_base",
+      "raw_lost_base",
+      "sum_lost_base"
+    ],
+    "monitor_cells": []
+  },
+  "models": {
+    "actor": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "temperature": null,
+      "max_tokens": 6000,
+      "reasoning_effort": "medium"
+    },
+    "summarizer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "temperature": null,
+      "max_tokens": 2000,
+      "reasoning_effort": "medium"
+    },
+    "planner": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "temperature": null,
+      "max_tokens": 2000,
+      "reasoning_effort": "medium"
+    },
+    "monitor": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 200,
+      "reasoning_effort": null
+    },
+    "judge": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 200,
+      "reasoning_effort": null
+    },
+    "authz": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "temperature": null,
+      "max_tokens": 2000,
+      "reasoning_effort": "medium"
+    }
+  },
+  "cells": {
+    "raw_preserved_base": {
+      "name": "raw_preserved_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "sum_preserved_base": {
+      "name": "sum_preserved_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "raw_lost_base": {
+      "name": "raw_lost_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "sum_lost_base": {
+      "name": "sum_lost_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    }
+  },
+  "dataset": {
+    "cases_sha256": "50c7a8fc0dbcb6d47712d88e0944ab03ea5e32ba8cea1e29c6fa58fac22f8514",
+    "scenarios_sha256": "15b2ecdb1e6a5967ced7571a405f9cbffeb7d89a70a8f679d891762fc74062be",
+    "n_cases_selected": 216
+  },
+  "prompt_fingerprint": "494df7c05d7c1f07f927f4de37caf32eb92184607ceaf2a1fad53252eb49029e",
+  "pricing_source": "OpenAI: https://developers.openai.com/api/docs/pricing (retrieved 2026-11-12); Anthropic: Claude API pricing table (claude-api skill, cached 2026-11-03)",
+  "budget_this_invocation": {
+    "ceiling_usd": 14.62,
+    "spent_usd": 7.78227,
+    "n_paid_calls": 1403,
+    "input_tokens": 2229510,
+    "output_tokens": 332325
+  },
+  "preregistration_sha256": "a05c8699f1fc8f7af0e904ba3b1a1ee307835721395bb0102c54109174ba5a67",
+  "history": [
+    {
+      "status": "started",
+      "at": "2026-11-12T04:49:29+0100",
+      "stages": [
+        "authz",
+        "actors",
+        "monitors",
+        "judge",
+        "score"
+      ],
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:authz",
+      "at": "2026-11-12T04:49:29+0100",
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:actors",
+      "at": "2026-11-12T04:58:58+0100",
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 7.78227,
+        "n_paid_calls": 1403,
+        "input_tokens": 2229510,
+        "output_tokens": 332325
+      }
+    },
+    {
+      "status": "completed:monitors",
+      "at": "2026-11-12T04:58:58+0100",
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 7.78227,
+        "n_paid_calls": 1403,
+        "input_tokens": 2229510,
+        "output_tokens": 332325
+      }
+    },
+    {
+      "status": "completed:judge",
+      "at": "2026-11-12T04:58:58+0100",
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 7.78227,
+        "n_paid_calls": 1403,
+        "input_tokens": 2229510,
+        "output_tokens": 332325
+      }
+    },
+    {
+      "status": "completed:score",
+      "at": "2026-11-12T04:58:58+0100",
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 7.78227,
+        "n_paid_calls": 1403,
+        "input_tokens": 2229510,
+        "output_tokens": 332325
+      }
+    },
+    {
+      "status": "finished",
+      "at": "2026-11-12T04:58:58+0100",
+      "git": {
+        "commit": "2b934636537e3eca5671cceaeacd248845bca558",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 14.62,
+        "spent_usd": 7.78227,
+        "n_paid_calls": 1403,
+        "input_tokens": 2229510,
+        "output_tokens": 332325
+      }
+    }
+  ]
+}

@@ -6,12 +6,15 @@ TrustBound is a reproducible measurement framework and benchmark. It asks what h
 whether **provenance-aware defenses** stop unauthorized actions without breaking legitimate tasks.
 
 > **Status (see `docs/research_report.md` §0 for the authoritative status table).**
-> - **Complete:** the framework, benchmark, tests, and dev-split pilots (OpenAI gpt-4.1-mini and
->   Claude Haiku 5.5).
-> - **Confirmatory study:** preregistered (`PREREGISTRATION.md`, Amendment 1) and run with Claude
->   on the held-out test split. Results are in `docs/research_report.md`.
-> - **Provenance of numbers:** every number comes from a run directory under `results/` with its
->   own manifest.
+> - **Complete:** the framework, benchmark, tests, dev-split pilots (OpenAI gpt-4.1-mini and Claude
+>   Haiku 5.5), and the preregistered confirmatory study on the held-out test split (Claude Haiku 5.5
+>   in all roles, plus a Claude Sonnet 5.5 actor arm; 6,912 trials; $13.15).
+> - **Headline:** both Claude models were at the floor on this benchmark (exact attacker success 0.60%
+>   and 0.45%), so the primary hypotheses are *not testable*, as pre-specified. The informative
+>   results are upper bounds, one residual vulnerability, and defense utility costs. See the report §7.
+> - **Pending:** human validation of the LLM judge (blinded sheet in `annotation/`).
+> - **Provenance of numbers:** every number comes from a run directory under `results/` with its own
+>   manifest. Deviations from the preregistration are in `docs/deviations.md`.
 
 ## What is in here
 
@@ -35,7 +38,7 @@ whether **provenance-aware defenses** stop unauthorized actions without breaking
 cd trustbound-starter
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt        # exact versions used: requirements-lock.txt
-pytest -q                              # 44+ unit/integration tests, no API calls
+pytest -q                              # 65 unit/integration tests, no API calls
 ```
 
 For real-model runs, put your API key(s) in a gitignored `.env` file, typed in your own
@@ -60,8 +63,8 @@ resumes. Identical API requests are served from `cache/responses.sqlite` at zero
 | Real-API smoke test (Claude / OpenAI) | `python -m trustbound run configs/smoke_claude.yaml` / `configs/smoke_api.yaml` | ≈ $0.02 |
 | Dev-split pilot, Claude Haiku 5.5 | `python -m trustbound run configs/pilot_dev_claude.yaml` | ≈ $1.3 (≈ $0 if cached) |
 | Dev-split pilot, gpt-4.1-mini | `python -m trustbound run configs/pilot_dev_v3.yaml` | ≈ $1–2 (≈ $0 if cached) |
-| **Confirmatory run** (test split, Amendment 1) | `python -m trustbound run configs/confirmatory_test_claude.yaml` | ≈ $4–7 |
-| Confirmatory secondary arm (Sonnet 5.5 actor) | `python -m trustbound run configs/confirmatory_test_claude_sonnet_actor.yaml --budget-usd <remaining>` | ≈ $8–12 |
+| **Confirmatory run** (test split, Amendment 1) | `python -m trustbound run configs/confirmatory_test_claude.yaml` | $5.37 actual (≈ $0 if cached) |
+| Confirmatory secondary arm (Sonnet 5.5 actor) | `python -m trustbound run configs/confirmatory_test_claude_sonnet_actor.yaml --budget-usd <remaining>` | $7.78 actual (≈ $0 if cached) |
 | Original OpenAI confirmatory plan (not run) | `python -m trustbound run configs/confirmatory_test.yaml --budget-usd <approved>` | ≈ $6–9 |
 | Estimate only | `python -m trustbound estimate <config>` | $0 |
 
@@ -118,8 +121,9 @@ Inference resamples whole scenarios, because cases within a scenario are not ind
 ## Safety and ethics
 
 All tools are simulated and all addresses use the reserved `.example` TLD. API keys are read from
-the environment and never written to disk or logs (`store=False` is sent to the API). The attack
-templates are generic, publicly documented patterns.
+the environment, or from the gitignored `.env` file you create yourself. The software never writes,
+prints, or logs them, and they appear in no result file (`store=False` is also sent to the OpenAI
+API). The attack templates are generic, publicly documented patterns.
 
 ## Interpreting results
 

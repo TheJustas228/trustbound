@@ -126,6 +126,14 @@ user request ──────────────────────�
     bounds instead of effects (Amendment 1).
 15. **API non-determinism.** Seeds are best-effort. Exact reproduction of *results* relies
     on the saved trajectories and response cache, not on re-querying the API.
+16. **Cache replay and effective n.** Identical requests are answered once and replayed from the
+    response cache. In the content-free monitor views, the synthetic attacker-goal set therefore
+    contains about one decision per scenario (24–46 distinct requests behind 1,008 rows). Actor
+    samples are unaffected: the sample index is part of the cache key, and 0 of 1,296 sample pairs
+    were identical.
+17. **Same model family as subject and evaluator.** In the primary run, Claude Haiku 5.5 is the
+    subject, the monitor, and the judge. Shared blind spots between the subject and the evaluator
+    cannot be ruled out without human review and other model families.
 
 ### Ethical scope
 All domains use the reserved `.example` TLD and all actions are simulated. The attack

@@ -141,3 +141,12 @@ def test_manifest_git_is_captured_at_start(tmp_path, monkeypatch):
     r.manifest("completed:test")
     m = json.loads((r.run_dir / "manifest.json").read_text())
     assert m["git"] == start and m["history"][-1]["git"] == start
+
+
+# ---- D8: verdict recovery for the (non-preregistered) monitor parse sensitivity analysis
+def test_monitor_verdict_recovery_sensitivity_only():
+    from trustbound.analysis.report import _recover_verdict
+    assert _recover_verdict({"raw": '{"suspicion": 3, "verdict": "allow", "reason": "ok "quoted" text"}'}) == "allow"
+    assert _recover_verdict({"raw": '{"suspicion": 95, "verdict": "block", "reason": "unterminated'}) == "block"
+    assert _recover_verdict({"raw": '{"verdict": "allow"} {"verdict": "block"}'}) is None   # ambiguous
+    assert _recover_verdict({"raw": None}) is None

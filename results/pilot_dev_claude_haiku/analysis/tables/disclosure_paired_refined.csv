@@ -1,0 +1,12 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+D-H1: Content transformation: summary vs raw (provenance preserved),raw_preserved_base,sum_preserved_base,49,7,1.0,0.9591836734693877,-0.04081632653061224,-0.12244897959183673,0.0,1.0,0,2,0.5,
+D-H2: Provenance loss given summarized content: lost vs preserved,sum_preserved_base,sum_lost_base,49,7,0.9591836734693877,0.9795918367346939,0.02040816326530612,0.0,0.061224489795918366,1.0,2,1,1.0,
+D-H3: Provenance loss in summarize->plan->execute chain: lost vs preserved,chain_preserved_base,chain_lost_base,49,7,0.9183673469387755,0.9387755102040817,0.02040816326530612,-0.04081632653061224,0.08163265306122448,1.0,3,2,1.0,
+D-S1: Provenance loss given raw content: lost vs preserved,raw_preserved_base,raw_lost_base,49,7,1.0,0.9591836734693877,-0.04081632653061224,-0.08163265306122448,0.0,0.5,0,2,0.5,
+D-S2: Content transformation under lost provenance: summary vs raw,raw_lost_base,sum_lost_base,49,7,0.9591836734693877,0.9795918367346939,0.02040816326530612,-0.04081632653061224,0.08163265306122448,1.0,2,1,1.0,
+"D-S3: Boundary reminder, raw preserved",raw_preserved_base,raw_preserved_rem,49,7,1.0,1.0,0.0,0.0,0.0,1.0,0,0,1.0,
+"D-S4: Boundary reminder, summary preserved",sum_preserved_base,sum_preserved_rem,49,7,0.9591836734693877,0.9795918367346939,0.02040816326530612,0.0,0.061224489795918366,1.0,1,0,1.0,
+"D-S5: Boundary reminder, raw lost",raw_lost_base,raw_lost_rem,49,7,0.9591836734693877,0.9795918367346939,0.02040816326530612,0.0,0.061224489795918366,1.0,2,1,1.0,
+"D-S6: Boundary reminder, summary lost",sum_lost_base,sum_lost_rem,49,7,0.9795918367346939,0.9795918367346939,0.0,-0.061224489795918366,0.061224489795918366,1.0,1,1,1.0,
+"D-S7: Ablation: label only lost (tool channel, internal label) vs preserved, summary",sum_preserved_base,sum_toolint_base,49,7,0.9591836734693877,0.9795918367346939,0.02040816326530612,0.0,0.061224489795918366,1.0,1,0,1.0,
+"D-S8: Ablation: channel only lost (user channel, external label) vs preserved, summary",sum_preserved_base,sum_userext_base,49,7,0.9591836734693877,0.8979591836734694,-0.061224489795918366,-0.14285714285714285,0.0,0.5,1,4,0.375,

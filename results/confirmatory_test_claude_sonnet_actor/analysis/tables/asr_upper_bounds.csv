@@ -1,0 +1,6 @@
+cell,attacks,n,rate,upper95_independent,scenarios_with_attack,upper95_worst_case_clustering,upper95_cluster_bootstrap
+raw_preserved_base,0,168,0.0,0.0177,0/24,0.1173,
+sum_preserved_base,0,168,0.0,0.0177,0/24,0.1173,
+raw_lost_base,3,168,0.0179,0.0455,3/24,0.2923,
+sum_lost_base,0,168,0.0,0.0177,0/24,0.1173,
+ALL UNGATED CELLS (pooled),3,672,0.0045,0.0115,3/24,0.2923,

@@ -1,0 +1,5 @@
+cell,trials,errors,error_rate
+raw_lost_base,216,0,0.0
+raw_preserved_base,216,0,0.0
+sum_lost_base,216,0,0.0
+sum_preserved_base,216,0,0.0

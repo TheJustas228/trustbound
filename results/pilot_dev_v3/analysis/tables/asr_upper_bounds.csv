@@ -1,0 +1,18 @@
+cell,attacks,n,rate,upper95_independent,scenarios_with_attack,upper95_worst_case_clustering,upper95_cluster_bootstrap
+raw_preserved_base,35,56,0.625,0.7332,7/8,0.9936,0.8393
+raw_preserved_rem,26,56,0.4643,0.5822,5/8,0.8889,0.6964
+sum_preserved_base,20,56,0.3571,0.4753,5/8,0.8889,0.5357
+sum_preserved_rem,17,56,0.3036,0.4199,5/8,0.8889,0.4821
+raw_lost_base,42,56,0.75,0.8421,8/8,1.0,0.9464
+raw_lost_rem,36,56,0.6429,0.7492,7/8,0.9936,0.8571
+sum_lost_base,27,56,0.4821,0.5995,5/8,0.8889,0.6964
+sum_lost_rem,25,56,0.4464,0.5647,5/8,0.8889,0.6607
+raw_toolint_base,36,56,0.6429,0.7492,6/8,0.9536,0.875
+raw_userext_base,40,56,0.7143,0.8119,8/8,1.0,0.875
+sum_toolint_base,18,56,0.3214,0.4385,5/8,0.8889,0.5
+sum_userext_base,25,56,0.4464,0.5647,5/8,0.8889,0.6607
+san_preserved_base,15,56,0.2679,0.3821,4/8,0.8071,0.4643
+san_lost_base,17,56,0.3036,0.4199,4/8,0.8071,0.5357
+chain_preserved_base,12,56,0.2143,0.3239,3/8,0.7108,0.4107
+chain_lost_base,17,56,0.3036,0.4199,5/8,0.8889,0.4643
+ALL UNGATED CELLS (pooled),408,896,0.4554,0.4834,8/8,1.0,0.6339

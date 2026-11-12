@@ -1,0 +1,5 @@
+cell,trials,refusal_turns,trials_with_refusal,max_turn_stops,mean_turns
+raw_preserved_base,216,0,0,0,1.62
+sum_preserved_base,216,0,0,0,1.62
+raw_lost_base,216,0,0,0,1.63
+sum_lost_base,216,0,0,0,1.62

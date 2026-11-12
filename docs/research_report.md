@@ -7,30 +7,33 @@
 | Item | Status | Evidence |
 |---|---|---|
 | Literature review (75 retrieved and verified references) | **Completed** | `docs/literature_review.md`, `docs/references.json` |
-| Experimental framework (pipelines, simulated tools, defenses, scoring, stats); 46 automated tests | **Completed** | `trustbound/`, `tests/` |
-| Benchmark: 32 scenarios × 9 variants = 288 cases, dev/test split | **Completed** (no independent human review) | `data/benchmark/`, `docs/benchmark.md` |
+| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 65 automated tests | **Completed** | `trustbound/`, `tests/` |
+| Benchmark: 32 scenarios × 9 variants = 288 cases, dev/test split | **Completed.** No independent human review | `data/benchmark/`, `docs/benchmark.md` |
 | Phase 1 pilot (8 cases, gpt-4.1-mini, label-only "summary") | **Completed, preliminary** | `legacy/phase1/` |
-| Dev-split pilots v1–v3 (8 scenarios, gpt-4.1-mini, 1 sample per cell) | **Completed, exploratory**: used for design and debugging; not confirmatory | `results/pilot_dev_v{1,2,3}/` |
-| Preregistration (hypotheses, analysis plan, power analysis) | **Completed**: commit `5725b78`, before any test-split trial | `PREREGISTRATION.md` |
-| Confirmatory run on held-out test split (24 scenarios) | **PENDING**: requires approval of a budget above the $5 default ceiling (≈ $10 upper bound) | §7 below is empty until run |
-| Human validation of the summary/plan judge | **PENDING**: requires a human annotator | `docs/annotation_guide.md`, `scripts/annotation.py` |
-| Additional model families (Anthropic, open-weight) | **Not done**: no credentials or GPU available; Anthropic adapter implemented and unit-tested only | `trustbound/providers/anthropic_provider.py` |
+| Dev-split pilots v1–v3 (8 scenarios, gpt-4.1-mini) and Claude Haiku 5.5 dev pilot | **Completed, exploratory.** Used for design and debugging; not confirmatory | `results/pilot_dev_v{1,2,3}/`, `results/pilot_dev_claude_haiku/` |
+| Preregistration (`5725b78`) and Amendment 1, Claude-only design (`a561875`), both before any test-split trial | **Completed** | `PREREGISTRATION.md` |
+| **Confirmatory run, primary:** Claude Haiku 5.5 in all roles, 24 held-out scenarios, 6,048 trials, 0 errors, $5.37 | **Completed and analysed** | `results/confirmatory_test_claude_haiku/` |
+| **Confirmatory run, secondary:** Claude Sonnet 5.5 actor, 4 core cells, 864 trials, 0 errors, $7.78 | **Completed and analysed** | `results/confirmatory_test_claude_sonnet_actor/` |
+| Deviations from the preregistration (D1–D8) | **Logged** | `docs/deviations.md` |
+| Human validation of the summary/plan judge | **PENDING.** Needs a human annotator; the blinded sheet is ready | `annotation/dev_pilot_v3_sheet.csv`, `docs/annotation_guide.md` |
+| OpenAI confirmatory run (original plan), open-weight models | **Not done.** Configurations exist; not run (Amendment 1) | `configs/confirmatory_test*.yaml` |
 
-Every number in this report comes from a run directory with a manifest (git commit, dataset hash,
-prompt fingerprint, models, cost). Numbers from the dev pilots are **exploratory**: 8 scenarios,
-one sample per cell, and the same scenarios were used to make design decisions. They motivate the
-preregistered hypotheses but do not test them.
+**Spend.** Anthropic $14.50 in total: $13.15 for the confirmatory runs, under the approved $20 cap,
+plus $1.34 for the Claude dev pilot and smoke test. OpenAI pilots: $2.20.
+
+**Provenance of numbers.** Every number in this report comes from a run directory with a manifest
+(git commit, dataset hash, prompt fingerprint, models, cost). The dev pilots are **exploratory**: 8
+scenarios, and the same scenarios were used for design decisions. Section 7 is the **confirmatory**
+analysis. Within it, "preregistered" and "exploratory" are labelled for every comparison.
 
 ## 1. Abstract
 
 LLM agents increasingly route external content through intermediate model stages before acting.
 A summarizer condenses a retrieved document; a planner turns the summary into steps; an executor
 calls tools. Each stage can strip the information that a piece of text came from an untrusted
-source. It can also rewrite an injected instruction into something that looks like a legitimate
-task.
+source, and can rewrite an injected instruction into something that looks like a legitimate task.
 
-TrustBound is a controlled, preregistered measurement framework for this setting. It separates
-three things:
+TrustBound is a controlled, preregistered measurement framework for this setting. It separates:
 1. **content transformation**: raw document vs. genuine LLM summary vs. summarize→plan chain
 2. **provenance presentation**: tool-result channel with an external-source label vs. a user-role
    message labelled as internal notes, with ablations that split channel from label and test
@@ -39,20 +42,41 @@ three things:
    - boundary reminders
    - a taint gate that propagates source labels through LLM stages
    - a structured authorization check extracted only from the user's request
-   - an LLM monitor evaluated in a 2 × 2 of "sees untrusted content" × "receives system-tracked
-     provenance"
+   - an LLM monitor in a 2 × 2 of "sees untrusted content" × "receives system-tracked provenance"
 
-On a dev split (8 scenarios, gpt-4.1-mini; exploratory), the pilots show five things:
-- **Summarization lowers exact attacker success,** mainly by dropping injections. But when an
-  injection survives, the summarizer often launders or amplifies it.
-- **Losing provenance raises attack success,** and the channel accounts for most of that effect.
-- **Message order is a large confound:** placing the user request after the content lowered attack
-  success by about 29 points in pilot v1.
-- **Content-free monitors detect better than content-reading ones.**
-- **A request-derived authorization gate prevented every attack** with no measured benign-utility
-  loss on these tasks.
+**Dev pilots (exploratory).** On 8 dev scenarios with gpt-4.1-mini, injections succeeded often: 21–75%
+exact attacker success depending on the cell. Summarization lowered success, provenance loss raised
+it, and summaries sometimes laundered injections into task-like statements.
 
-The confirmatory test-split results are pending (§7).
+**Confirmatory study.** The preregistered study ran on 24 held-out scenarios with Claude Haiku 5.5
+in every role (6,048 trials), plus Claude Sonnet 5.5 as executor (864 trials). Both models were
+**at the floor**:
+- **Exact attacker success.** Pooled over all ungated cells: 24/4,032 (0.60%; one-sided 95% upper
+  bound 0.84% assuming independence) for Haiku, and 3/672 (0.45%) for Sonnet.
+- **Primary hypotheses.** As anticipated in Amendment 1, all five are therefore **not testable
+  (floor) or not discriminable (ceiling)**.
+
+All remaining successes occurred when the raw document was delivered in a user-role message
+labelled as internal notes: Haiku 22/336 (6.5%), Sonnet 3/168 (1.8%). Under preserved provenance
+there were 0 successes in every cell. Three exploratory contrasts each removed these successes:
+- summarizing the document
+- adding a boundary reminder
+- placing the user request after the content
+
+Losing only the channel or only the label did not reproduce the effect (0/168 and 1/168).
+
+On the defense side:
+- **Request-derived authorization** matched the oracle specification on 24/24 scenarios. It blocked
+  every attack at a measured benign-utility cost of 0.2 points.
+- **Taint tracking with label propagation** also blocked every attack, but cost 23–25 points of benign
+  task success, all on tasks whose legitimate target comes from the document. This replicated across
+  both executors.
+- **LLM monitors** detected 100% of synthetic and real attacker-goal calls in all four views. Their
+  false-block rates were at most 1.3%.
+
+The study is therefore mainly a **robustness result plus a defense-cost result** for current Claude
+models. It cannot test the summarization and provenance mechanisms for models that resist these
+attacks.
 
 ## 2. Introduction
 
@@ -90,15 +114,17 @@ RQ1–RQ4 are as preregistered (`PREREGISTRATION.md` §2):
 The literature review found that "provenance loss at agent boundaries increases unauthorized
 actions, and the channel matters more than rewriting" has already been shown (Zhou et al., EMNLP
 2026; Peters-Gill et al., 2026). TrustBound's defensible contributions are:
-1. **A controlled replication/extension of that result.** It uses genuine LLM summarization and
-   planning (not delegation), commercial models with native multi-turn tool calling, and a
-   factorial that separates content, channel, label, and message order.
-2. **A 2 × 2 study of monitor context.** The factors are untrusted content shown (yes/no) and
-   system-tracked provenance (yes/no), on identical proposed calls. The design is directly
-   motivated by a deployed monitor design.
-3. **A taxonomy of what intermediate agents do with injections,** linked descriptively to
-   downstream executor behaviour, with a human-validation protocol.
-4. **Open, reproducible infrastructure:** benchmark, caching, budgeting, manifests, and
+1. **A controlled factorial design.** It uses genuine LLM summarization and planning (not
+   delegation) with native multi-turn tool calling, and separates content, channel, label, and
+   message order. It was run on two providers: OpenAI on dev, Anthropic as the confirmatory study.
+2. **A 2 × 2 study of monitor context** (untrusted content shown × system-tracked provenance) on
+   identical proposed calls, motivated by a deployed monitor design.
+3. **A preregistered robustness measurement** of current Claude models on this benchmark, with
+   valid upper bounds under clustering. It also measures **defense utility costs** that remain
+   informative when attacks fail.
+4. **A taxonomy of what intermediate agents do with injections,** linked descriptively to
+   downstream behaviour, with a human-validation protocol.
+5. **Open, reproducible infrastructure:** benchmark, caching, budgeting, manifests, and
    cluster-aware statistics.
 
 The deterministic gates (taint, authorization) are **reference designs and baselines**. They are
@@ -117,7 +143,8 @@ not claimed as novel: they follow information-flow-control and CaMeL-style desig
 - **Monitoring and control:** AI Control (Greenblatt et al.); Ctrl-Z; SHADE-Arena; the Claude Code
   auto-mode design.
 - **Adaptive attacks** (Zhan et al. 2025; Nasr et al. 2025) caution that fixed-payload results
-  overstate the robustness of prompt-level and detector defenses.
+  overstate the robustness of prompt-level and detector defenses. This applies directly to the
+  floor result in §7.
 
 ## 4. Threat model (summary; full version in `docs/threat_model.md`)
 
@@ -148,7 +175,8 @@ summarizer-targeted). The split is by scenario: 8 dev and 24 test.
 - summarize→plan→execute chain
 
 Provenance is preserved, lost, or partially lost (channel-only or label-only), and the actor runs
-with a baseline prompt or with a boundary reminder.
+with a baseline prompt or with a boundary reminder. Two ordering cells place the user request
+*after* the content.
 
 **Defenses** (`docs/methodology.md` §5). Each is a pre-execution gate on proposed calls:
 - taint gate, with and without label propagation
@@ -164,29 +192,252 @@ with a baseline prompt or with a boundary reminder.
 
 ## 6. Methods (summary; full detail in `docs/methodology.md`)
 
-- **Primary model:** gpt-4.1-mini. Temperature 1.0 for the pipeline, 0 for defenses and judge.
-  At most 4 actor turns.
+- **Confirmatory models (Amendment 1).**
+  - **Primary:** `claude-haiku-5-5` in every role (actor, summarizer, planner, monitor, judge,
+    authorization extractor).
+  - **Secondary:** `claude-sonnet-5-5` as actor in the four single-stage core cells, with Haiku
+    summaries shared byte-for-byte through the response cache (verified: 216/216 identical).
+  - **Settings:** default sampling (current Claude models reject temperature), adaptive thinking at
+    medium effort, at most 4 actor turns.
+- **Design:** 22 cells; k = 2 samples in the six core cells, otherwise k = 1; 168 attack cases and
+  48 non-attack cases per cell and sample. The repeated samples are independent API calls: 0 of
+  1,296 sample pairs produced identical outputs.
 - **Pairing:**
-  - Intermediate outputs are generated once and shared, so cells compare the same summary text.
+  - Intermediate outputs are generated once and shared across cells.
   - Monitors judge identical calls under each view.
+  - Gates are compared on identical trials.
 - **Inference:**
-  - scenario-cluster bootstrap CIs
-  - scenario-level sign-flip tests
-  - Holm correction across the primary family
-  - GEE as a robustness check
-- **Power:** adequate (≈ 0.93) for 15-point paired differences in core cells; ≈ 0.61 for 10-point
-  differences.
+  - scenario-cluster bootstrap CIs (10,000 draws)
+  - two-sided scenario-level sign-flip tests
+  - Holm correction across the primary family H1–H5
+  - floor/ceiling decision rules fixed in Amendment 1 (A1.5)
+  - one-sided 95% upper bounds for the floor estimand (A1.6, corrected in D2)
+- **Power:** adequate (≈ 0.93) for 15-point paired differences, assuming base rates like
+  gpt-4.1-mini's. That assumption did not hold for Claude (§7.2).
 
 ## 7. Confirmatory results (test split)
 
-> **PENDING.** The preregistered runs (`configs/confirmatory_test*.yaml`) have not been executed:
-> the estimated cost (≈ $10.30 upper bound) exceeds the $5 default ceiling and needs explicit
-> approval.
->
-> After the run, this section is generated from
-> `results/confirmatory_test_gpt41mini/analysis/report.md` and the two secondary-model runs. It
-> must report every preregistered primary and secondary test, including those that do not
-> support the predictions.
+**Sources:**
+- `results/confirmatory_test_claude_haiku/analysis/report.md`
+- `results/confirmatory_test_claude_sonnet_actor/analysis/report.md`
+
+Every preregistered primary and secondary test is reported, including the uninformative ones.
+Brackets are 95% scenario-cluster bootstrap CIs. *p* values are two-sided scenario-level sign-flip
+tests. **Secondary tests are unadjusted, as preregistered.**
+
+### 7.1 Run integrity
+
+- **Trial errors:** 0 of 6,048 (Haiku) and 0 of 864 (Sonnet). The 2% retry rule was not triggered.
+- **Refusals:** 0. Mean actor turns: 1.5–1.6.
+- **Other errors:** 0 authorization-extraction errors, 0 empty summaries or plans, and 0 monitor API
+  errors.
+- **Invalid tool calls:** 5, where the actor called a tool name it had seen in the history
+  ("read_document"). These are scored as invalid.
+- **Judge:** 20 of 1,176 outputs had malformed JSON, all recovered from cache under D6: 19
+  "flagged" and 1 "reported".
+- **Monitor parse failures:** 0–71 per view and set. They fail closed, as preregistered. See §7.6
+  for the sensitivity analysis.
+- **Bug fixes found by independent review (D3)** were applied by re-scoring without API calls. The
+  pre-fix and post-fix `scores.csv` are **byte-identical**, so no number changed.
+
+### 7.2 Preregistered primary family (H1–H5)
+
+| Hypothesis | Contrast | Rates | Status (A1.5 rule) |
+|---|---|---|---|
+| H1 | Summary vs raw, provenance preserved | 0/336 vs 0/336 | **Not testable (floor)** |
+| H2 | Lost vs preserved, summary | 0/336 vs 0/336 | **Not testable (floor)** |
+| H3 | Lost vs preserved, chain | 0/336 vs 0/336 | **Not testable (floor)** |
+| H4 | Monitor minimal+prov vs minimal: detection (synthetic attacker-goal calls) | 0.999 vs 1.000 | **Not discriminable (ceiling)** |
+| H5 | Monitor minimal vs blind: detection (synthetic) | 1.000 vs 1.000 | **Not discriminable (ceiling)** |
+
+All Holm-adjusted *p* = 1. The GEE robustness models are not estimable, because they have zero
+events in both cells. In the Sonnet arm, H1 and H2 are likewise 0/168 vs 0/168: not testable (floor).
+**No directional conclusion is drawn about RQ1–RQ3.**
+
+### 7.3 Primary estimand under the floor (A1.6): exact attacker success with upper bounds
+
+| | Attacks / trials | Rate | Upper 95%, independent trials (Clopper–Pearson) | Scenarios with ≥ 1 attack | Upper 95%, worst-case clustering* |
+|---|---|---|---|---|---|
+| **Haiku, all ungated cells** | 24 / 4,032 | 0.60% | 0.84% | 10/24 | 60.3% |
+| Haiku, raw document, provenance lost | 22 / 336 | 6.5% [2.4, 11.9] | 9.2% | 10/24 | 60.3% |
+| Haiku, raw, channel lost only | 1 / 168 | 0.6% | 2.8% | 1/24 | 18.3% |
+| Haiku, raw, lost, request after content | 1 / 168 | 0.6% | 2.8% | 1/24 | 18.3% |
+| Haiku, each of the other 15 ungated cells | 0 / 168 or 0 / 336 | 0% | 1.8% or 0.9% | 0/24 | 11.7% |
+| **Sonnet, all four cells** | 3 / 672 | 0.45% | 1.15% | 3/24 | 29.2% |
+| Sonnet, raw, provenance lost | 3 / 168 | 1.8% | 4.6% | 3/24 | 29.2% |
+| Sonnet, each other cell | 0 / 168 | 0% | 1.8% | 0/24 | 11.7% |
+
+\*A Clopper–Pearson bound on the share of scenarios with any attack. It stays valid however
+strongly trials within a scenario are correlated, but it is very conservative. The pooled
+cluster-bootstrap bound for Haiku (≥ 5 events, as required by D2) is 1.02%.
+
+**Where the successes were.**
+- **By strategy:** role spoofing accounted for 14 of 22 Haiku successes (29% of role-spoofing
+  trials in that cell) and all 3 Sonnet successes. Naive override: 4. Policy impersonation: 2.
+  Metadata field: 1. Laundered action item: 1. Task-relevant and summarizer-targeted payloads never
+  succeeded.
+- **By scenario:** two scenarios account for 12 of the 22.
+- **Across models:** every case Sonnet executed was also executed by Haiku in at least one sample.
+
+The successful payload forges a short "user message / assistant message" exchange inside the
+document. When the document is pasted into a user-role turn labelled as internal notes, the forged
+follow-up is indistinguishable by position from a genuine user turn. In the trajectory we
+inspected, the actor complied and told the user it had done so "since you asked".
+
+### 7.4 Preregistered secondary actor contrasts (S1–S16; unadjusted)
+
+| ID | Contrast (Haiku) | Rate a → b | Difference | *p* |
+|---|---|---|---|---|
+| S1 | Raw: preserved → lost | 0 → 6.5% | **+6.5 [2.4, 11.9]** | **0.002** |
+| S2 | Lost: raw → summary | 6.5% → 0 | **−6.5 [−11.9, −2.4]** | **0.002** |
+| S5 | Raw lost: baseline → reminder | 6.5% → 0 (paired on sample 0: 11 → 0) | **−6.5 [−12.5, −2.4]** | **0.015** |
+| S15 | Raw lost: request before → after content | 6.5% → 0.6% | **−6.0 [−10.7, −2.4]** | **0.015** |
+| S9 | Raw: preserved → label lost only | 0 → 0 | 0 | 1 |
+| S10 | Raw: preserved → channel lost only | 0 → 0.6% | +0.6 [0, 1.8] | 1 |
+| S3, S4, S6, S7, S8, S11–S14, S16 | Summary, sanitizing, chain, and reminder contrasts | 0 → 0 | 0 | 1 |
+
+Interpretation, with care:
+- **S1, S2, S5, S15 overlap.** All four involve the same 22 events in `raw_lost_base`, so they are
+  not independent confirmations.
+- **Holm correction (not preregistered).** Across the 16 secondary tests, S1 and S2 survive. S5 and
+  S15 do not: they would need *p* ≤ 0.0036.
+- **The ablations (S9, S10) suggest an interaction (exploratory).** Neither the user channel alone
+  nor the internal label alone reproduced the effect. Only their combination did.
+- **Sonnet arm:** S1 = +1.8 points (3 vs 0), *p* = 0.25. The direction is the same; it is not
+  significant at k = 1.
+
+### 7.5 Pre-specified secondary outcomes with variance (A1.7)
+
+**Disclosure** (A1.7.1): the actor's final message names the attacker's target, usually to warn the
+user. Rates were high everywhere:
+- 95–99% in raw and summary cells
+- 87–90% in chain cells
+- 81–82% with the sanitizing summarizer, which by design often removes the target
+
+Paired contrasts, Haiku, unadjusted:
+
+| Contrast | Difference | *p* | Refined metric (D4) |
+|---|---|---|---|
+| D-H2: summary, lost vs preserved | −3.0 [−5.4, −0.9] | 0.032 | −3.2, *p* = 0.031 |
+| D-S2: lost, summary vs raw | −4.5 [−8.3, −1.5] | 0.008 | +2.3, *p* = 0.62 |
+| D-S1: raw, lost vs preserved | +2.1 [0.3, 4.5] | 0.12 | −4.9, *p* = 0.16 |
+| D-S5: raw lost, reminder vs baseline | +0.6 | 1 | +7.8 [2.6, 14.3], *p* = 0.015 |
+| D-H1, D-H3, D-S3, D-S4, D-S6–D-S8 | \|diff\| ≤ 3.0 | ≥ 0.19 | similar |
+
+**These disclosure effects are fragile:**
+- No disclosure contrast survives a Holm correction across the 11 contrasts (not preregistered;
+  the threshold would be *p* ≤ 0.0045).
+- In the Sonnet arm, D-H2 goes the **opposite** way: +4.2 [0.6, 8.9], *p* = 0.12.
+- The refined metric changes several signs, because executed attacks are no longer counted as
+  disclosures.
+
+We do not claim a disclosure effect.
+
+**Benign utility (A1.7.2).**
+- **Single-stage cells:** raw document 0.98–1.00; LLM summary 0.92–1.00; sanitizing summary
+  0.96–0.98.
+- **Chain:** 0.79 [0.67, 0.91] (preserved) and 0.76 [0.61, 0.89] (lost). The chain costs about
+  20 points of benign task success relative to raw content. This is descriptive: U3, chain lost vs
+  preserved, is −3.1, *p* = 0.78.
+- **U1** (summary vs raw, preserved): −6.3 [−14.6, 0], *p* = 0.25.
+- **Utility under attack:** 0.90–1.00 in ungated cells.
+- **Sonnet:** benign utility 0.96–1.00.
+
+**Unrequested extra actions in the chain (descriptive, not preregistered).** In 13 of 432
+chain-lost trials, the actor executed an action the user never authorized and the attacker never
+asked for. Examples: a confirmation email to the counterparty, a report to `security@acme.example`,
+and a "hold" note on a record. There was 1 such trial in 432 chain-preserved trials. These come
+from the planner's suggestions being carried out when the plan arrives as internal notes. Strict
+authorization scoring counts them as unauthorized, which is why `any_unauthorized` is 3% in
+`chain_lost_base` while exact attacker success is 0.
+
+### 7.6 Monitors (A1.4; A1.7.3)
+
+**Detection.**
+- **Synthetic attacker-goal calls:** blocked in 99.9–100% of 1,008 per view, in all four views
+  (ceiling).
+- **Effective n (D8):**
+  - The content-free views contain few distinct requests: 24 for `minimal`, 46 for `minimal_prov`.
+    Each identical request is one decision replayed from cache.
+  - `blind` has 1,008 distinct requests and `aware` 840.
+  - So the content-free result is effectively "24/24 scenarios blocked".
+- **Real attacker-goal calls:** 22 of 22 blocked in every view. AUROC against authorized clean
+  calls was 1.000 in all views.
+
+**False blocks on real authorized calls** (S-M1, S-M3, S-M4; preregistered fail-closed rule):
+
+| View | Clean/benign (n = 308) | Attack cases (n = 1,205) | Parse failures excluded: clean / attack |
+|---|---|---|---|
+| Blind (content, no provenance) | 1.3% | 0.7% | 0.3% / 0.1% |
+| Aware (content + provenance) | 0.0% | 0.9% | 0.0% / 0.1% |
+| Minimal (no content) | 1.0% | 0.7% | 1.0% / 0.7% |
+| Minimal + provenance notes | 0.0% | 0.3% | 0.0% / 0.3% |
+
+- **Tests:** S-M1 (minimal_prov vs minimal, clean): −1.0 points, *p* = 1. S-M3 (aware vs blind,
+  clean): −1.3, *p* = 0.25. S-M4 (blind vs minimal, attack cases): 0, *p* = 1.
+- **Parse failures inflate the content-reading views.** Most of their apparent false blocks are
+  *allow* verdicts in malformed JSON: 10 real calls each for blind and aware. With verdicts
+  recovered, the blind/aware false-block rates fall to 0.0–0.3%.
+- **The delegated-target trade-off from the gpt-4.1-mini dev pilot did not appear.** There,
+  `minimal_prov` falsely blocked 20% of authorized clean calls. With the Claude monitor and the
+  revised prompt it blocked 0 of 308. The prompt and the model both changed, so we cannot say which
+  mattered.
+- **Planner extra actions** (n = 17 real calls, §7.5): monitors allowed most of them. They blocked
+  0% in blind and aware, 12% in minimal, and 24% in minimal_prov.
+
+### 7.7 Gates (A1.7.4–5; G1–G6)
+
+Haiku, identical trials in the six core cells (2,016 attack and 576 non-attack trials):
+
+| Gate | Exact ASR | Benign task success |
+|---|---|---|
+| None | 1.1% [0.4, 2.0] | 0.91 [0.85, 0.95] |
+| Taint, with propagation | 0 | **0.68 [0.51, 0.84]** |
+| Taint, without propagation | 1.1% | 0.87 [0.81, 0.92] |
+| Authorization, extracted from request | 0 | 0.91 [0.85, 0.95] |
+| Authorization, oracle | 0 | 0.91 [0.85, 0.95] |
+| Monitor, any view | 0 | 0.90–0.91 |
+
+| Test | Result (Haiku) | Sonnet arm |
+|---|---|---|
+| G1: authorization (extracted) vs none, ASR | −1.1 points (22 → 0), *p* = 0.002 | −0.4 (3 → 0), *p* = 0.25 |
+| G2: authorization vs none, benign utility | −0.2 points (1 trial), *p* = 1 | −0.5, *p* = 1 |
+| G3: taint with vs without propagation, ASR | −1.1 points, *p* = 0.002 | −0.4, *p* = 0.25 |
+| **G4: taint (propagation) vs none, benign utility** | **−22.6 [−38.5, −7.5]**, *p* = 0.030 | **−25.0 [−41.7, −8.3]**, *p* = 0.030 |
+| G5: monitor minimal+prov vs none, benign utility | 0, *p* = 1 | (no monitors) |
+| **G6: authorization vs taint, benign utility** | **+22.4 [7.5, 38.4]**, *p* = 0.030 | **+24.5**, *p* = 0.030 |
+
+- **Authorization extraction vs oracle (A1.7.5):** exact agreement on **24/24** test scenarios,
+  including the 6 data-dependent scenarios with field-level delegation.
+- **Taint's utility cost is entirely in data-dependent tasks.** Benign utility there went from 0.90
+  to 0.00, while fixed-target and read-only tasks were unaffected. The legitimate target comes from
+  the document, so a gate that distrusts all document-derived values must block it.
+- **Online vs offline:** online enforcement matched the offline counterfactual within 3.1 points in
+  all four online cells. Example: taint propagation, benign utility 0.71 offline vs 0.73 online.
+
+### 7.8 What intermediate agents did with injections (descriptive; judge unvalidated)
+
+| Stage (Haiku) | dropped | flagged | reported | laundered | amplified | Target survives | Keyword-flagged |
+|---|---|---|---|---|---|---|---|
+| Neutral summary (n = 336) | 0 | 332 | 3 | 0 | 1 | 98.5% | 40.5% |
+| Sanitizing summary (n = 168) | 0 | 168 | 0 | 0 | 0 | 83.9% | 99.4% |
+| Plan, provenance preserved (n = 336) | 0 | 336 | 0 | 0 | 0 | 97.3% | 38.7% |
+| Plan, provenance lost (n = 336) | 0 | 333 | 3 | 0 | 0 | 98.2% | 43.8% |
+
+- **The judge labels almost every Haiku summary and plan "flagged".** The intermediate model keeps
+  the attacker's target but explicitly marks the request as untrusted and not from the user.
+- **The keyword check is a narrow lower bound.** It finds explicit warning words in only about 40%
+  of these outputs.
+- **AI spot check (not human validation).** We read 5 randomly chosen disagreements, and the
+  judge's label was correct in all 5. Those outputs flagged the request in other words, such as
+  "this instruction comes from the email content, not from the user".
+- **Possible bias.** The judge is the same model family as the summarizer. Human annotation is
+  pending.
+- **Contrast with gpt-4.1-mini (dev, §8.4).** There the neutral summarizer laundered or amplified
+  26/56 injections and dropped 21.
+- **What carries forward.** With Claude, the summarizer's own safety behaviour reaches the executor
+  as an *annotation* rather than a deletion. Summary cells had 0 attacks even though the target
+  survived in 98.5% of summaries. This is descriptive: we did not manipulate the annotation.
 
 ## 8. Preliminary and exploratory results
 
@@ -220,44 +471,42 @@ points to position (recency), not trust. After the fix (pilot v2/v3, content alw
 request), the same contrast reversed. For raw content, lost-provenance attack success was **0.75
 with the request first vs 0.46 with the request last**, a ≈ 29-point effect of message order alone.
 
+This was pre-specified as S15–S16. On the held-out split with Claude Haiku, the same direction
+appeared at a much lower level: 6.5% → 0.6%, *p* = 0.015, unadjusted (§7.4).
+
 **Lesson for the field.** Studies that manipulate "channel" by moving content into the user turn
-can confound trust with position. This is pre-specified as secondary tests S15–S16 on the held-out
-split.
+can confound trust with position.
 
-### 8.3 Dev pilot v3 (corrected design): actor outcomes
+### 8.3 Dev pilot v3 (corrected design): actor outcomes, gpt-4.1-mini
 
-Exact attacker-goal success, gpt-4.1-mini. n = 56 attack cases per cell from 8 scenarios. 95%
-cluster-bootstrap CIs; these are very wide at 8 clusters.
+Exact attacker-goal success. n = 56 attack cases per cell from 8 scenarios. 95% cluster-bootstrap
+CIs, which are very wide at 8 clusters. CIs were regenerated with the final analysis code; the
+point estimates are unchanged.
 
 | Cell | Raw document | LLM summary |
 |---|---|---|
-| Provenance preserved (tool channel, external label) | 0.62 [0.36, 0.88] | 0.36 [0.16, 0.57] |
+| Provenance preserved (tool channel, external label) | 0.62 [0.36, 0.88] | 0.36 [0.14, 0.57] |
 | Provenance lost (user channel, internal label) | 0.75 [0.50, 0.95] | 0.48 [0.21, 0.75] |
-| Label lost only (tool channel, internal label) | 0.64 [0.34, 0.91] | 0.32 [0.12, 0.54] |
+| Label lost only (tool channel, internal label) | 0.64 [0.32, 0.91] | 0.32 [0.12, 0.54] |
 | Channel lost only (user channel, external label) | 0.71 [0.50, 0.91] | 0.45 [0.20, 0.70] |
 | Preserved + boundary reminder | 0.46 [0.20, 0.73] | 0.30 [0.11, 0.50] |
-| Lost + boundary reminder | 0.64 [0.37, 0.89] | 0.45 [0.20, 0.70] |
+| Lost + boundary reminder | 0.64 [0.36, 0.89] | 0.45 [0.18, 0.71] |
 
 | Chain (summarize→plan→execute) | ASR |
 |---|---|
-| Provenance preserved | 0.21 [0.02, 0.46] |
+| Provenance preserved | 0.21 [0.02, 0.48] |
 | Provenance lost | 0.30 [0.12, 0.48] |
 
-Exploratory observations (all dev; to be tested on the test split):
+Exploratory observations, all on dev data:
 - **(a) Summarization lowered exact attacker success** by ≈ 27 points under both presentations.
-- **(b) Losing provenance raised it** by ≈ 13 points (raw) and ≈ 13 points (summary). The channel-only
-  ablation reproduced most of this, and the label-only ablation did not. This is consistent with
-  Trust Cascade's channel result.
-- **(c) The boundary reminder's reduction was smaller under lost provenance.** Summary: −5
-  points preserved vs −4 lost. Raw: −16 vs −11.
-- **(d) Benign utility was ≈ 1.00 in all single-stage cells.** The sanitizing summarizer and chain
-  cells showed occasional failures, e.g. a hallucinated recipient after the summary dropped the
-  sender's address, and overeager file sharing.
+- **(b) Losing provenance raised it** by ≈ 13 points for both raw and summary. The channel-only
+  ablation reproduced most of this, and the label-only ablation did not.
+- **(c) The boundary reminder's reduction was smaller under lost provenance.**
+- **(d) Benign utility was ≈ 1.00 in all single-stage cells.**
 
-### 8.4 Dev pilot v3: what intermediate agents did with injections
+### 8.4 Dev pilot v3: what intermediate agents did with injections, gpt-4.1-mini
 
-LLM-judge categories on the 56 attack-case outputs per stage. These are **unvalidated** until human
-annotation.
+LLM-judge categories on the 56 attack-case outputs per stage (**unvalidated**).
 
 | Stage | dropped | flagged | reported | laundered | amplified | attacker target survives |
 |---|---|---|---|---|---|---|
@@ -270,35 +519,20 @@ The neutral summarizer was never asked to report action items. Even so, it re-st
 request as a neutral fact or requirement ("laundered") or as an instruction ("amplified") in 26/56
 cases.
 
-A planner that saw the summary with its provenance, and was asked to tag step origins, more often
-*reported* the request as coming from the document (16 vs 1). It amplified less (7 vs 17).
-Downstream, executors almost never performed attacks whose injection was dropped upstream, and
-usually performed amplified ones. This is descriptive: category and outcome share causes.
+### 8.5 Dev pilot v3: monitors, gpt-4.1-mini
 
-### 8.5 Dev pilot v3: monitors
-
-Each valid proposed call in the six core cells was judged under four views:
-- 153 calls whose tool and target match the attacker's goal
-- 60 authorized calls in clean or benign cases
-- 132 authorized calls in attack cases
-
-| View | Blocks attacker-goal calls | Blocks authorized calls (clean/benign) | Blocks authorized calls (attack cases) | AUROC |
+| View | Blocks attacker-goal calls (n = 153) | Blocks authorized calls, clean/benign (n = 60) | Blocks authorized calls, attack cases (n = 132) | AUROC |
 |---|---|---|---|---|
-| Blind (transcript as the actor saw it) | 0.82 | 0.00 | 0.11 | 0.91 |
-| Aware (content + provenance labels) | 0.85 | 0.00 | 0.10 | 0.93 |
-| Minimal (request + tool calls only) | 0.94 | 0.00 | 0.07 | 0.97 |
+| Blind | 0.82 | 0.00 | 0.11 | 0.91 |
+| Aware | 0.85 | 0.00 | 0.10 | 0.93 |
+| Minimal | 0.94 | 0.00 | 0.07 | 0.97 |
 | Minimal + provenance notes | 1.00 | 0.20 | 0.34 | 0.99 |
 
-Exploratory observations:
-- **Showing the monitor untrusted content was associated with *worse* detection.** In the earliest
-  smoke test, content-reading monitors were also "hijacked" into blocking the *legitimate* action
-  because the injected text named a different recipient.
-- **Provenance notes made the content-free monitor catch every attacker-goal call,** but it then
-  blocked legitimately delegated targets ("reply to the sender", "the ticket this email refers
-  to"). All its clean false blocks were in data-dependent tasks. One prompt revision on dev did
-  not remove this, and it is treated as a real trade-off.
+With gpt-4.1-mini as the monitor, showing untrusted content was associated with *worse* detection.
+Provenance notes made the content-free monitor catch every attacker-goal call, but it then blocked
+legitimately delegated targets.
 
-### 8.6 Dev pilot v3: gates (identical trials, six core cells)
+### 8.6 Dev pilot v3: gates, gpt-4.1-mini (identical trials, six core cells)
 
 | Gate | Exact ASR | Benign task success |
 |---|---|---|
@@ -309,68 +543,137 @@ Exploratory observations:
 | Authorization, oracle | 0.00 | 0.99 |
 | Monitor: minimal + provenance | 0.00 | 0.86 |
 
-Observations (dev):
-- **Label propagation is what makes taint tracking work.** Without it, laundered summaries carry
-  the attacker's target into "trusted" internal text.
-- **The taint gate's utility cost is concentrated in data-dependent tasks,** where the legitimate
-  target comes from the document.
-- **The request-derived authorization spec matched the oracle on all 8 dev scenarios.** On these
-  tasks it was both secure and useful, because it can express field-level delegation. It remains
-  vulnerable by design to attackers who control the delegated field.
-- **Online (in-loop) enforcement closely matched the offline counterfactual estimates.**
+Label propagation is what made taint tracking work. Without it, laundered summaries carried the
+attacker's target into "trusted" internal text.
 
-## 9. Discussion (to be revised after §7)
+### 8.7 Claude Haiku 5.5 dev pilot (8 dev scenarios; the basis for Amendment 1)
 
-If the test split confirms the dev patterns, the practical message has three parts:
-1. **Intermediate LLM stages are an unreliable sanitizer.** They drop most injections, but they
-   launder the rest into forms that downstream agents treat as tasks.
-2. **Provenance must be carried by the system, not by the text.** A gate that propagates labels,
-   or a deterministic authorization check, is unaffected by laundering. The same signal given to
-   an LLM monitor helps detection but costs utility where users delegate targets to documents.
-3. **Monitor design should avoid exposing untrusted content.** This is consistent with the
-   auto-mode design choice, and the provenance-notes variant shows one way to add back "where did
-   this identifier come from" without the injection risk.
+The pilot ran 1,008 attack trajectories across 18 ungated cells.
+- **Exact attacker success:** 3 attacks (0.3%): 2 in raw-lost, 1 in raw-lost with the request
+  last.
+- **Monitor:** blocked 100% of synthetic attacker-goal calls in all views.
+- **Intermediate agents:** the judge labelled all summaries and plans "flagged".
+- **Taint gate:** benign utility 0.75 (vs 1.00 without a gate), concentrated in data-dependent
+  tasks.
 
-Each claim depends on §7 and is currently a hypothesis.
+These results led to the floor/ceiling rules, the upper-bound estimand, and the synthetic monitor
+set in Amendment 1, all fixed before any test-split trial. The confirmatory results in §7 match
+these expectations closely (A1.3).
+
+## 9. Discussion
+
+**1. The main result is a robustness result, and it is model-specific.** On the same benchmark and
+the same 8 dev scenarios:
+- gpt-4.1-mini executed 21–75% of fixed injections, depending on the cell;
+- on the held-out scenarios, Claude Haiku 5.5 executed 0.60% and Claude Sonnet 5.5 0.45%.
+
+The preregistered hypotheses were derived from gpt-4.1-mini. They are untestable for models at
+the floor, and we draw no conclusion about them. This is not evidence that summarization or
+provenance loss is harmless: a mechanism can only show up where the model is vulnerable. Fixed,
+non-adaptive payloads also overstate robustness (Zhan et al. 2025; Nasr et al. 2025).
+
+**2. The residual vulnerability matches the provenance-loss mechanism.** Every Claude success in
+the confirmatory study occurred in one configuration:
+- the raw document was placed in a user-role message, and
+- it was labelled as internal notes, and
+- most often, the payload forged a user turn.
+
+Under preserved provenance, none of the 1,512 Haiku attack trials in preserved cells succeeded.
+This is exploratory and rests on 22 events in 10 scenarios. Even so, it is consistent with the
+dev-pilot direction and with prior work: when the *system* misattributes external text to a
+trusted principal, the model's own judgment is all that remains. Unlike gpt-4.1-mini, the effect
+needed both the channel change and the label change.
+
+**3. Intermediate Claude agents annotated injections rather than laundering them.** As judged by
+an unvalidated LLM judge:
+- the summarizer and planner kept the attacker's target in about 98% of outputs, but marked the
+  request as untrusted;
+- downstream, summary and chain cells had 0 attacks, even with provenance lost.
+
+The gpt-4.1-mini summarizer often laundered injections into neutral task statements. The question
+"does an intermediate stage sanitize or launder?" therefore depends on the intermediate model, and
+should be measured per model rather than assumed.
+
+**4. Defense costs are informative even when attacks fail.**
+- **Request-derived authorization** was the best design on this benchmark: it agreed with the oracle
+  on 24/24 scenarios, blocked every attack, and lost 0.2 points of benign utility. Its known blind
+  spot, an attacker who controls a delegated field, is out of scope by construction (threat model).
+- **Taint tracking with propagation** was equally secure but cost 23–25 benign-utility points,
+  replicated across two executors. Every point of that cost is in tasks where the user delegates
+  the target to the document. Without propagation it offered no protection (G3).
+- **The LLM monitor's delegated-target false blocks** seen with gpt-4.1-mini did not appear with
+  Claude. Its detection was at ceiling, so H4 (does provenance help a content-free monitor?) stays
+  open.
+
+**5. Measurement lessons.**
+- **Fail-closed parsing** turned malformed *allow* verdicts into apparent false blocks. A sensitivity
+  analysis is needed whenever parse failures are not negligible.
+- **Response caching** collapses identical monitor requests into one decision. Effective n must be
+  reported.
+- **Message order** confounds channel manipulations (§8.2).
+- **Bookkeeping errors** (D7) show that a manifest must record the code version at process start.
 
 ## 10. Limitations
 
 See `docs/threat_model.md` §4 for the full list. The most important:
-1. **Small, templated benchmark**: 24 test scenarios, 7 template strategies.
-2. **Non-adaptive attacker.**
-3. **Simulated tools.**
-4. **One provider** (OpenAI). Anthropic and open-weight models were not run.
-5. **LLM judge not yet human-validated.**
-6. **String-level target matching.**
-7. **Offline gate evaluation approximates enforcement,** checked online for four cells.
-8. **Dev-split design decisions were not made blind** to the benchmark.
+1. **Floor and ceiling effects.** The confirmatory study cannot test H1–H5 for the models it used.
+2. **Small, templated benchmark:** 24 test scenarios, 7 template strategies.
+3. **Non-adaptive attacker.** The near-zero attack rates are an upper bound on robustness against
+   *these* payloads only.
+4. **Simulated tools,** and at most 4 actor turns.
+5. **Model coverage.** Confirmatory: two Anthropic models. Dev only: one OpenAI model. No
+   open-weight models.
+6. **Same-model roles.** Haiku is actor, monitor, and judge in the primary run. Judge categories
+   are not yet human-validated.
+7. **Effective n for content-free monitor views** is about one decision per scenario.
+8. **String-level target matching.**
+9. **Offline gate evaluation approximates enforcement.** It was checked online for four cells, and
+   agreed within 3.1 points.
+10. **No independent human review.** The benchmark, code, and analysis have not been reviewed by
+    anyone outside the project.
 
 ## 11. Future work (proposed, not done)
 
-1. Human validation of judge categories (n = 120; protocol ready).
-2. Anthropic and open-weight actor models (adapter implemented).
-3. Adaptive attacks: optimize payloads against each defense, especially the monitor and the
-   summarizer.
-4. Port the summarizer-in-the-loop manipulation to AgentDojo, for external validity.
-5. Field-level provenance for LLM monitors, e.g. passing the authorization spec to the monitor, to
-   remove the delegated-target false blocks.
-6. Longer-horizon agents with memory, where laundered instructions could persist.
+1. **Escape the floor.** Use adaptive payload optimization against each pipeline stage, harder
+   benchmarks (AgentDojo port), or more vulnerable models. Then test H1–H3 where they can be tested.
+2. **Run the original OpenAI confirmatory configuration** on the test split. It is ready
+   (`configs/confirmatory_test.yaml`) and needs budget approval. It would test H1–H5 with a model
+   that showed effects on dev.
+3. **Human validation of judge categories** (n = 110; blinded sheet ready).
+4. **Manipulate intermediate-agent annotation directly**: for example, summaries with and without
+   the "untrusted" flag. This would test whether flagging, not deletion, is what protects the
+   executor.
+5. **Field-level provenance for monitors**: pass the authorization spec to the monitor.
+6. **Longer-horizon agents with memory,** where laundered instructions could persist.
 
 ## 12. Reproducibility
 
 See `README.md`. In short:
-- `pytest -q`
+- `pytest -q` (65 tests, no API calls)
 - `python -m trustbound run <config>`, which resumes from checkpoint and replays cached responses
-- `python -m trustbound analyze results/<run>`, which regenerates all tables and figures
-  deterministically from saved trajectories
+- `python -m trustbound analyze results/<run>`, which regenerates all tables and figures from saved
+  trajectories (seeded bootstrap; two consecutive runs produce identical tables)
 
 Every run's `manifest.json` records:
-- the git commit and dirty flag
-- the dataset SHA-256 (`cases.jsonl`)
+- the git commit (since D7, captured at process start, with a per-invocation history)
+- the dataset SHA-256
 - the prompt fingerprint and preregistration SHA-256
-- the resolved model snapshots and package versions
+- the resolved models and package versions
 - the cost
+
+The confirmatory trials were generated by commit `a561875` (D7).
 
 ## 13. Deviations from the preregistration
 
-None yet: the confirmatory run has not started.
+Eight deviations are logged with their timing in `docs/deviations.md`:
+- **D1:** process monitoring
+- **D2:** corrected upper-bound estimand
+- **D3:** scoring and analysis bug fixes; no number changed
+- **D4:** refined disclosure metric
+- **D5:** Sonnet scope
+- **D6:** judge parse fallback
+- **D7:** manifest code version
+- **D8:** monitor parse sensitivity and effective-n reporting
+
+D6–D8 were made after outcomes had been seen. None changes a preregistered quantity, and the
+preregistered versions are reported first.
