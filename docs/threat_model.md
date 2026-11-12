@@ -111,13 +111,20 @@ user request ──────────────────────�
     generalization. Intervals come from the cluster bootstrap and tests from scenario-level
     sign-flips. With about 24 clusters, small effects (under 10 percentage points) are not
     reliably detectable (see the power analysis in the preregistration).
-12. **Model coverage.** The primary model is `gpt-4.1-mini` (OpenAI), plus whatever secondary
-    models the confirmatory run includes. No Anthropic or open-weight models were run
-    (no credentials or GPU). Model-specific instruction-hierarchy training strongly affects
-    channel effects, so results may not transfer across providers.
-13. **Sampling temperature 1.0** for the agent pipeline (summarizer, planner, actor) and
-    0.0 for defenses and judges. Results at temperature 0 may differ.
-14. **API non-determinism.** Seeds are best-effort. Exact reproduction of *results* relies
+12. **Model coverage.** The confirmatory study uses two Anthropic models: `claude-haiku-5-5` in all
+    roles, and `claude-sonnet-5-5` as the actor in four cells. OpenAI `gpt-4.1-mini` was run on the
+    dev split only. No open-weight models were run. Robustness differs dramatically by provider:
+    on the same dev scenarios, gpt-4.1-mini executed 21–75% of attacks, while Claude Haiku 5.5
+    executed 3 of 1,008. Results do not transfer across models, and the mechanisms studied (channel,
+    label, summarization) can only show effects where a model is vulnerable.
+13. **Sampling.**
+    - Claude calls run at default sampling. Temperature cannot be set on current Claude models.
+      This includes the monitor and judge, so their verdicts are stochastic.
+    - OpenAI dev pilots used T = 1.0 for the pipeline and T = 0 for defenses and judges.
+14. **Floor and ceiling effects.** With a robust actor and monitor, comparisons between conditions
+    are uninformative. The confirmatory study pre-specifies floor/ceiling rules and reports upper
+    bounds instead of effects (Amendment 1).
+15. **API non-determinism.** Seeds are best-effort. Exact reproduction of *results* relies
     on the saved trajectories and response cache, not on re-querying the API.
 
 ### Ethical scope

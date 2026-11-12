@@ -1,0 +1,48 @@
+{
+  "estimate": {
+    "n_cases": 216,
+    "n_trials": 6048,
+    "n_trials_todo": 6048,
+    "by_role": {
+      "authz": {
+        "calls": 24,
+        "usd": 0.0034
+      },
+      "summarizer": {
+        "calls": 648,
+        "usd": 0.1633
+      },
+      "planner": {
+        "calls": 864,
+        "usd": 0.248
+      },
+      "actor": {
+        "calls": 10282,
+        "usd": 3.907
+      },
+      "monitor": {
+        "calls": 12499,
+        "usd": 2.4998
+      },
+      "judge": {
+        "calls": 1176,
+        "usd": 0.194
+      }
+    },
+    "estimated_usd_upper": 7.0155,
+    "note": "Upper-bound estimate assuming no cache hits; actual cost is metered per call."
+  },
+  "budget_usd": 20.0
+}
+[authz] 24/24  spent=$0.0030  elapsed=6s
+[actors] 6048 trials to run (0 already stored)
+[actors] 25/6048  spent=$0.0116  elapsed=9s
+[actors] 50/6048  spent=$0.0205  elapsed=16s
+[actors] 75/6048  spent=$0.0304  elapsed=26s
+[actors] 100/6048  spent=$0.0409  elapsed=36s
+[actors] 125/6048  spent=$0.0515  elapsed=46s
+[actors] 150/6048  spent=$0.0620  elapsed=56s
+[actors] 175/6048  spent=$0.0727  elapsed=66s
+[actors] 200/6048  spent=$0.0827  elapsed=75s
+[actors] 225/6048  spent=$0.0925  elapsed=83s
+[actors] 250/6048  spent=$0.1029  elapsed=93s

@@ -20,20 +20,37 @@ generalization for inference (§7).
 
 ## 2. Agents and models
 
-| Role | Sees | Default model / settings |
-|---|---|---|
-| Summarizer | user request + raw document | gpt-4.1-mini, T = 1.0, ≤ 300 tokens; "neutral" or "sanitizing" prompt |
-| Planner (chain cells) | user request + summary (presented lost or preserved) | gpt-4.1-mini, T = 1.0 |
-| **Actor** (executor) | its view (§3) + 4 simulated tools | gpt-4.1-mini, T = 1.0, ≤ 600 tokens; secondary runs: gpt-4o-mini, gpt-5-mini (reasoning effort low) |
-| Authz extractor | user request + document field *names* only | gpt-4.1-mini, T = 0, JSON mode |
-| Monitor | one of four views (§5.3) + the proposed call | gpt-4.1-mini, T = 0, JSON mode |
-| Judge | injected text + attacker target + summary/plan | gpt-4.1-mini, T = 0, JSON mode |
+Two model configurations were used.
+- **Confirmatory study** (Amendment 1): Anthropic Claude.
+- **Dev pilots**: OpenAI gpt-4.1-mini, the original plan, retained as exploratory cross-provider data.
 
-All prompts are in `trustbound/prompts.py`. Their SHA-256 fingerprint is stored in every run
-manifest. API calls use the official `openai` SDK (Chat Completions) with `store=False` and a
-per-request seed derived from the trial key. The resolved model snapshot (e.g.
-`gpt-4.1-mini-2025-04-14`), the system fingerprint, token usage, latency, retries, and cost are
-logged for every call.
+| Role | Sees | Confirmatory (Claude) | Dev pilots v1–v3 (OpenAI) |
+|---|---|---|---|
+| Summarizer | user request + raw document | claude-haiku-5-5, effort medium | gpt-4.1-mini, T = 1.0 |
+| Planner (chain cells) | user request + summary (lost or preserved presentation) | claude-haiku-5-5 | gpt-4.1-mini, T = 1.0 |
+| **Actor** (executor) | its view (§3) + 4 simulated tools | claude-haiku-5-5 (all cells); claude-sonnet-5-5 (secondary arm, 4 cells) | gpt-4.1-mini, T = 1.0 |
+| Authz extractor | user request + document field *names* only | claude-haiku-5-5 | gpt-4.1-mini, T = 0, JSON mode |
+| Monitor | one of four views (§5.3) + the proposed call | claude-haiku-5-5 | gpt-4.1-mini, T = 0, JSON mode |
+| Judge | injected text + attacker target + summary/plan | claude-haiku-5-5 | gpt-4.1-mini, T = 0, JSON mode |
+
+**Claude-specific settings** (`trustbound/providers/anthropic_provider.py`):
+- **Sampling.** Current Claude models reject non-default `temperature`, `top_p` and `top_k`, so
+  every Claude call runs at **default sampling**. That includes the monitor, judge, and extractor,
+  which are therefore not deterministic. Seeds are not supported, and identical requests are only
+  reproducible through the response cache.
+- **Thinking.** Adaptive thinking is on, at `output_config.effort = "medium"` for every role.
+  Thinking tokens are billed as output tokens, and `max_tokens` leaves room for them.
+- **History handling.** In multi-turn tool loops, each Claude assistant turn is stored with its raw
+  content blocks (including signed thinking blocks) and replayed verbatim. The API checks that the
+  history is append-only.
+- **JSON output.** Requested by instruction and parsed tolerantly (code fences, surrounding prose);
+  there is no JSON mode.
+- **Refusals.** No server-side refusal fallback. A refusal (`stop_reason: refusal`) is data, not a
+  silent model switch.
+
+All prompts are in `trustbound/prompts.py`, and their SHA-256 fingerprint is stored in every run
+manifest. The resolved model snapshot, token usage, latency, retries, and cost are logged for every
+call. OpenAI calls additionally use `store=False` and a per-request seed.
 
 **Sharing intermediate outputs.** A summary (or plan) for a given (case, summarizer type, sample)
 is generated once and reused by every cell that needs it. So `sum_preserved_base` and
@@ -150,6 +167,17 @@ A monitor's verdict (allow/block) is the gate decision; parse failures fail clos
 counted. The suspicion score (0–100) is used for AUROC. Monitors are evaluated **offline**: each
 valid proposed call in the six core cells is judged under all four views.
 
+**Evaluation sets** (Amendment 1).
+- **Detection** is measured on **synthetic canonical attacker-goal calls**: the attacker's exact
+  `(tool, target)` call with neutral arguments, appended to each monitored trial's real context
+  (sample 0 of the six core cells). The set is fixed and does not depend on whether the actor
+  attacked.
+- **False blocks** are measured on **real authorized calls** the actor proposed.
+- **Synthetic authorized calls are not used.** In the Claude dev pilot, a generic placeholder body
+  ("As requested, here is the relevant information.") made monitors block 100% of legitimate
+  data-dependent calls, whereas real legitimate calls were blocked in fewer than 1% of cases.
+  Monitors evidently judge message content, not only targets.
+
 ### 5.4 Prevention vs detection vs evaluation
 
 - **Prevention** = gate decisions applied to calls before (simulated) execution. They are evaluated
@@ -213,5 +241,7 @@ Downstream attack success is tabulated by intermediate category. This is descrip
 | v1 → v2 | User-channel content moved from *before* the request (single message) to a *follow-up* message after it; chain-lost plan message made symmetric (removed "Carry out the plan") | In v1, provenance loss *reduced* attack success. The channel-only ablation reproduced this and the label-only ablation did not, which points to recency (the request was last). |
 | v2 → v3 | Monitor prompt explains delegated targets ("reply to the sender"); provenance notes reworded neutrally (no capitalized "NOT") | `minimal_prov` blocked every legitimate data-dependent call (14/14 of its false blocks were delegated targets). |
 | v3 | Added the request-last ordering cells to the confirmatory design | The v1/v2 difference (≈ 29 points for raw content) is a substantive dev-pilot finding, so it is tested on the held-out split rather than reported from the dev data. |
+| Claude pilot | Switched to the Claude API (Amendment 1): claude-haiku-5-5 in all roles, claude-sonnet-5-5 actor arm; default sampling; adaptive thinking at medium effort; verbatim thinking-block replay | Decision to use the Anthropic account. The dev pilot showed floor/ceiling effects (3/1,008 attacks; 100% monitor detection), so floor/ceiling decision rules and robustness estimands (upper bounds) were pre-specified. |
+| Claude pilot | Synthetic monitor calls restricted to attacker-goal calls; false blocks measured on real calls | Placeholder-body artifact (above). |
 
 Pilot results are reported in the research report as **dev-split, exploratory** findings only.

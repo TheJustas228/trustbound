@@ -6,10 +6,12 @@ TrustBound is a reproducible measurement framework and benchmark. It asks what h
 whether **provenance-aware defenses** stop unauthorized actions without breaking legitimate tasks.
 
 > **Status (see `docs/research_report.md` §0 for the authoritative status table).**
-> The framework, benchmark, tests, and dev-split pilots are complete.
-> The preregistered confirmatory run on the held-out test split is reported in
-> `docs/research_report.md` only if it has been executed. Every number in this repository
-> comes from a run directory under `results/`, and every run directory records its own manifest.
+> - **Complete:** the framework, benchmark, tests, and dev-split pilots (OpenAI gpt-4.1-mini and
+>   Claude Haiku 5.5).
+> - **Confirmatory study:** preregistered (`PREREGISTRATION.md`, Amendment 1) and run with Claude
+>   on the held-out test split. Results are in `docs/research_report.md`.
+> - **Provenance of numbers:** every number comes from a run directory under `results/` with its
+>   own manifest.
 
 ## What is in here
 
@@ -36,11 +38,13 @@ pip install -r requirements.txt        # exact versions used: requirements-lock.
 pytest -q                              # 44+ unit/integration tests, no API calls
 ```
 
-For real-model runs, set your key in your own shell. It is read by the OpenAI SDK and never
-logged or stored:
+For real-model runs, put your API key(s) in a gitignored `.env` file, typed in your own
+terminal so the key never appears in chat or shell history. The CLI loads `.env` without printing
+it, and the SDKs read the key from the environment; it is never logged or stored elsewhere.
 
 ```bash
-read -rsp "OpenAI API key: " OPENAI_API_KEY; echo; export OPENAI_API_KEY
+read -rsp 'Anthropic API key: ' k; echo; printf 'ANTHROPIC_API_KEY=%s\n' "$k" >> .env; chmod 600 .env; unset k
+read -rsp 'OpenAI API key: ' k; echo; printf 'OPENAI_API_KEY=%s\n' "$k" >> .env; chmod 600 .env; unset k   # optional
 ```
 
 ## Running experiments
@@ -53,9 +57,12 @@ resumes. Identical API requests are served from `cache/responses.sqlite` at zero
 | Mode | Command | Cost |
 |---|---|---|
 | Plumbing smoke test (mock provider) | `python -m trustbound run configs/smoke_mock.yaml` | $0 |
-| Real-API smoke test | `python -m trustbound run configs/smoke_api.yaml` | ≈ $0.02 |
-| Dev-split pilot | `python -m trustbound run configs/pilot_dev_v3.yaml` | ≈ $1–2 (≈ $0 if cached) |
-| Confirmatory run (test split) | `python -m trustbound run configs/confirmatory_test.yaml --budget-usd <approved>` | see `PREREGISTRATION.md` |
+| Real-API smoke test (Claude / OpenAI) | `python -m trustbound run configs/smoke_claude.yaml` / `configs/smoke_api.yaml` | ≈ $0.02 |
+| Dev-split pilot, Claude Haiku 5.5 | `python -m trustbound run configs/pilot_dev_claude.yaml` | ≈ $1.3 (≈ $0 if cached) |
+| Dev-split pilot, gpt-4.1-mini | `python -m trustbound run configs/pilot_dev_v3.yaml` | ≈ $1–2 (≈ $0 if cached) |
+| **Confirmatory run** (test split, Amendment 1) | `python -m trustbound run configs/confirmatory_test_claude.yaml` | ≈ $4–7 |
+| Confirmatory secondary arm (Sonnet 5.5 actor) | `python -m trustbound run configs/confirmatory_test_claude_sonnet_actor.yaml --budget-usd <remaining>` | ≈ $8–12 |
+| Original OpenAI confirmatory plan (not run) | `python -m trustbound run configs/confirmatory_test.yaml --budget-usd <approved>` | ≈ $6–9 |
 | Estimate only | `python -m trustbound estimate <config>` | $0 |
 
 Stages can be run separately: `--stages authz,actors,monitors,judge,score`.

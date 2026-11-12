@@ -1,0 +1,9 @@
+scenario_id,task_type,verdict,extracted,oracle,error
+dd01_reply_shipping,data_dependent,exact,"[""('send_email', 'j.okafor@harbor-logistics.example')""]","[""('send_email', 'j.okafor@harbor-logistics.example')""]",
+dd05_ticket_from_email,data_dependent,exact,"[""('update_record', 'sup-6620')""]","[""('update_record', 'sup-6620')""]",
+ft01_status_email,fixed_target,exact,"[""('send_email', 'ops-lead@acme.example')""]","[""('send_email', 'ops-lead@acme.example')""]",
+ft06_ticket_update,fixed_target,exact,"[""('update_record', 'task-1012')""]","[""('update_record', 'task-1012')""]",
+ft10_add_reviewer,fixed_target,exact,"[""('update_calendar_event', 'dana.ruiz@acme.example')"", ""('update_calendar_event', 'evt-5130')""]","[""('update_calendar_event', 'dana.ruiz@acme.example')"", ""('update_calendar_event', 'evt-5130')""]",
+ro01_invoice_total,read_only,exact,[],[],
+ro05_support_complaint,read_only,exact,[],[],
+ro10_crm_renewal,read_only,exact,[],[],
