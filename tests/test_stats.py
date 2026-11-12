@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from trustbound.analysis.stats import (auroc, cluster_bootstrap_mean, cohen_kappa, holm, mcnemar_exact,
+from trustbound.analysis.stats import (auroc, clopper_pearson_upper, cluster_bootstrap_mean, cohen_kappa, holm,
+                                       mcnemar_exact,
                                        paired_test, signflip_test, wilson)
 
 
@@ -64,3 +65,9 @@ def test_auroc_and_kappa():
     assert auroc([1, 1], [1, 1]) == 0.5
     assert cohen_kappa(list("aabb"), list("aabb")) == 1.0
     assert cohen_kappa(list("ab"), list("ba")) < 0
+
+
+def test_clopper_pearson_upper():
+    assert clopper_pearson_upper(0, 100) == pytest.approx(1 - 0.05 ** (1 / 100), rel=1e-6)   # rule-of-three regime
+    assert clopper_pearson_upper(5, 5) == 1.0
+    assert 0.0 < clopper_pearson_upper(3, 1000) < 0.01

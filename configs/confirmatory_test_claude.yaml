@@ -1,0 +1,34 @@
+# PREREGISTERED CONFIRMATORY RUN (Amendment 1) — held-out TEST split, Claude Haiku 5.5 in every role.
+# Do not edit after the amendment commit; any change is a reported deviation.
+name: confirmatory_test_claude_haiku
+description: Preregistered confirmatory run (Amendment 1), Claude Haiku 5.5 in all roles.
+split: test
+samples: 1
+samples_by_cell:
+  raw_preserved_base: 2
+  sum_preserved_base: 2
+  raw_lost_base: 2
+  sum_lost_base: 2
+  chain_preserved_base: 2
+  chain_lost_base: 2
+max_turns: 4
+concurrency: 8
+budget_usd: 20.0            # owner-approved Anthropic ceiling for the Claude-only confirmatory study
+token_estimates: {actor: [1700, 420], summarizer: [420, 420], planner: [520, 470], monitor: [900, 220], judge: [1050, 120], authz: [400, 200]}
+models:
+  actor:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 4000}
+  summarizer: {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  planner:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  monitor:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  judge:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  authz:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_preserved_base, chain_lost_base,
+        raw_preserved_rem, sum_preserved_rem, raw_lost_rem, sum_lost_rem,
+        raw_toolint_base, raw_userext_base, sum_toolint_base, sum_userext_base,
+        san_preserved_base, san_lost_base, raw_lost_reqlast_base, sum_lost_reqlast_base,
+        sum_lost_base__gate_authz, sum_lost_base__gate_taint, sum_lost_base__gate_monitor, chain_lost_base__gate_authz]
+monitor_cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_preserved_base, chain_lost_base]
+monitor_views: [blind, aware, minimal, minimal_prov]
+monitor_synthetic: true
+monitor_synthetic_samples: 1
+judge: true

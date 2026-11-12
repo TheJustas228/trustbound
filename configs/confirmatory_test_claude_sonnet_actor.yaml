@@ -1,0 +1,19 @@
+# PREREGISTERED SECONDARY RUN (Amendment 1) — test split; only the ACTOR changes to Claude Sonnet 5.5.
+# Summarizer/planner/authz are Claude Haiku 5.5 with identical requests, so their outputs are shared with the
+# primary run through the response cache (identical summaries). Four single-stage core cells (budget), one sample, no monitors.
+name: confirmatory_test_claude_sonnet_actor
+description: Preregistered secondary run (Amendment 1), actor Claude Sonnet 5.5, four single-stage core cells.
+split: test
+samples: 1
+max_turns: 4
+concurrency: 6
+budget_usd: 20.0
+judge: false
+token_estimates: {actor: [1700, 450], summarizer: [420, 420], planner: [520, 470], authz: [400, 200]}
+models:
+  actor:      {provider: anthropic, model: claude-sonnet-5-5, temperature: null, reasoning_effort: medium, max_tokens: 6000}
+  summarizer: {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  planner:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  authz:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base]
+monitor_cells: []

@@ -29,6 +29,15 @@ def wilson(k: int, n: int, alpha: float = 0.05) -> tuple[float, float]:
     return (max(0.0, centre - half), min(1.0, centre + half))
 
 
+def clopper_pearson_upper(k: int, n: int, alpha: float = 0.05) -> float:
+    """One-sided exact upper confidence bound for a binomial proportion (assumes independence)."""
+    if n == 0:
+        return float("nan")
+    if k >= n:
+        return 1.0
+    return float(sps.beta.ppf(1 - alpha, k + 1, n - k))
+
+
 def _cluster_arrays(df: pd.DataFrame, value: str, cluster: str) -> tuple[np.ndarray, np.ndarray]:
     g = df.groupby(cluster)[value].agg(["sum", "count"])
     return g["sum"].to_numpy(dtype=float), g["count"].to_numpy(dtype=float)
