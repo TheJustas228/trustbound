@@ -1,0 +1,10 @@
+.env
+.env.*
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# API response cache (reproducible from results; large). Share separately if needed.
+cache/
+# scratch outputs from smoke tests
+results/smoke*.jsonl
