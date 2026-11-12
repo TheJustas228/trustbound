@@ -10,7 +10,8 @@ from __future__ import annotations
 import threading
 from dataclasses import dataclass
 
-PRICING_SOURCE = "https://developers.openai.com/api/docs/pricing (retrieved 2026-11-12)"
+PRICING_SOURCE = ("OpenAI: https://developers.openai.com/api/docs/pricing (retrieved 2026-11-12); "
+                  "Anthropic: Claude API pricing table (claude-api skill, cached 2026-11-03)")
 
 # model prefix -> (input, cached_input, output) USD per 1M tokens
 PRICES: dict[str, tuple[float, float, float]] = {
@@ -23,6 +24,12 @@ PRICES: dict[str, tuple[float, float, float]] = {
     "gpt-5.4-nano": (0.20, 0.02, 1.25),
     "gpt-5.4-mini": (0.75, 0.075, 4.50),
     "gpt-5.4": (2.50, 0.25, 15.00),
+    # Anthropic (prompts <= 100K tokens; cache reads 0.1x input)
+    "claude-haiku-5-5": (0.10, 0.01, 0.50),
+    "claude-haiku-4-5": (1.00, 0.10, 5.00),
+    "claude-sonnet-5-5": (2.00, 0.10, 10.00),
+    "claude-sonnet-5": (2.00, 0.20, 10.00),
+    "claude-opus-5-5": (4.00, 0.20, 20.00),
     "mock": (0.0, 0.0, 0.0),
 }
 

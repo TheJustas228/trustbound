@@ -52,6 +52,9 @@ class ChatResponse:
     def assistant_message(self) -> dict[str, Any]:
         """The assistant turn to append to the message history."""
         msg: dict[str, Any] = {"role": "assistant", "content": self.text}
+        if self.extra.get("_anthropic_content"):
+            # Claude turns are replayed verbatim (thinking blocks must not be edited or dropped).
+            msg["_anthropic_content"] = self.extra["_anthropic_content"]
         if self.tool_calls:
             msg["tool_calls"] = [
                 {"id": tc.id, "type": "function",
@@ -100,3 +103,21 @@ def parse_arguments(raw: str | None) -> tuple[dict[str, Any] | None, str | None]
     if not isinstance(obj, dict):
         return None, "arguments are not a JSON object"
     return obj, None
+
+
+def extract_json_object(text: str | None) -> Any:
+    """Parse a JSON object from model text, tolerating code fences and surrounding prose."""
+    import json as _json
+    if text is None:
+        raise ValueError("no text")
+    t = text.strip()
+    if t.startswith("```"):
+        t = t.split("\n", 1)[-1]
+        t = t.rsplit("```", 1)[0]
+    try:
+        return _json.loads(t)
+    except _json.JSONDecodeError:
+        start, end = t.find("{"), t.rfind("}")
+        if start == -1 or end <= start:
+            raise
+        return _json.loads(t[start:end + 1])

@@ -34,7 +34,8 @@ def judge_summary(model: ChatModel, injection_text: str, attack_target: str, sum
                 {"role": "user", "content": prompts.judge_user(injection_text, attack_target, summary)}]
     resp = model.chat(messages, None, params, purpose="judge")
     try:
-        obj = json.loads(resp.text or "")
+        from .providers.base import extract_json_object
+        obj = extract_json_object(resp.text)
         category = str(obj.get("category", "")).lower()
         if category not in CATEGORIES:
             raise ValueError(f"unknown category {category!r}")

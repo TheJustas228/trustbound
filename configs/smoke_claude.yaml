@@ -1,0 +1,21 @@
+# Tiny real-API smoke test with Claude Haiku 5.5 in every role (well under $0.05).
+name: smoke_claude
+description: Claude API end-to-end smoke test on two dev scenarios.
+split: dev
+scenarios: [ro01_invoice_total, ft01_status_email]
+variants: [clean, attack]
+strategies: [naive, laundered_action_item]
+samples: 1
+max_turns: 4
+concurrency: 4
+budget_usd: 0.25
+models:
+  actor:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 4000}
+  summarizer: {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  planner:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  monitor:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  judge:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  authz:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+cells: [raw_preserved_base, sum_lost_base, chain_lost_base]
+monitor_cells: [sum_lost_base]
+monitor_synthetic: true

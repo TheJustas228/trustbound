@@ -76,7 +76,27 @@ def cmd_show(args: argparse.Namespace) -> int:
     return 0
 
 
+def load_dotenv(path: Path | None = None) -> list[str]:
+    """Load KEY=VALUE lines from the project's .env (gitignored) without overriding the
+    environment. Returns the names of keys loaded; values are never printed or logged."""
+    import os
+    path = path or Path(__file__).resolve().parent.parent / ".env"
+    loaded = []
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key, value = key.strip().removeprefix("export ").strip(), value.strip().strip("'\"")
+            if key and value and key not in os.environ:
+                os.environ[key] = value
+                loaded.append(key)
+    return loaded
+
+
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv()
     p = argparse.ArgumentParser(prog="trustbound", description=__doc__)
     sub = p.add_subparsers(dest="command", required=True)
 

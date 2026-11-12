@@ -45,9 +45,10 @@ def oracle_spec(case: Case) -> AuthzSpec:
 
 
 def parse_spec(text: str) -> tuple[list[dict[str, Any]], str | None]:
+    from ..providers.base import extract_json_object
     try:
-        obj = json.loads(text)
-    except (json.JSONDecodeError, TypeError) as exc:
+        obj = extract_json_object(text)
+    except (json.JSONDecodeError, TypeError, ValueError) as exc:
         return [], f"invalid JSON: {exc}"
     allowed = []
     for a in obj.get("allowed_actions", []) if isinstance(obj, dict) else []:

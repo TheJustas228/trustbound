@@ -29,7 +29,7 @@ from .budget import PRICING_SOURCE, BudgetExceeded, BudgetGuard, cost_usd
 from .config import ExperimentConfig
 from .dataset import DEFAULT_CASES, DEFAULT_SCENARIOS, Case, file_sha256, load_cases
 from .defenses.authz import AuthzGate, AuthzSpec, extract_spec, oracle_spec
-from .defenses.monitor import VIEWS, build_context, run_monitor
+from .defenses.monitor import VIEWS, build_context, run_monitor, synthetic_calls, with_proposed_call
 from .defenses.taint import TaintGate
 from .pipelines import CELLS, Cell, build_chain_view, build_single_view, run_planner, run_summarizer, stable_seed
 from .provenance import ProvenanceGraph
@@ -220,13 +220,18 @@ class Runner:
         n_mon = sum(1 for _, cell, _ in trials if cell.name in self.cfg.monitor_cells)
         n_online_mon = sum(1 for _, cell, _ in todo if cell.gate.startswith("monitor_"))
         attack_frac = (sum(1 for c in self.cases if c.variant == "attack") / max(1, len(self.cases)))
+        n_syn = 0
+        if self.cfg.monitor_synthetic:
+            for case, cell, s in trials:
+                if cell.name in self.cfg.monitor_cells and s < self.cfg.monitor_synthetic_samples:
+                    n_syn += len(synthetic_calls(case)) * len(self.cfg.monitor_views)
         calls = {
             "authz": len({c.scenario_id for c in self.cases}),
             "summarizer": len(summaries),
             "planner": len(plans),
             "actor": len(todo) * self.cfg.avg_actor_turns,
             "monitor": (n_mon * len(self.cfg.monitor_views) + n_online_mon)
-                       * self.cfg.avg_monitored_calls_per_trajectory,
+                       * self.cfg.avg_monitored_calls_per_trajectory + n_syn,
             "judge": (len(summaries) + len(plans)) * attack_frac if self.cfg.judge else 0,
         }
         by_role = {}
@@ -427,18 +432,29 @@ class Runner:
                     key = f"{rec['key']}|{call['call_id']}|{view}"
                     if key not in store or (retry_errors and store.get(key).get("error")):
                         jobs.append((rec, call, view, key))
+            if self.cfg.monitor_synthetic and rec["sample"] < self.cfg.monitor_synthetic_samples:
+                case = self.case_by_id[rec["case_id"]]
+                for call in synthetic_calls(case):
+                    for view in self.cfg.monitor_views:
+                        key = f"{rec['key']}|{call['call_id']}|{view}"
+                        if key not in store or (retry_errors and store.get(key).get("error")):
+                            jobs.append((rec, {**call, "synthetic": True}, view, key))
         print(f"[monitors] {len(jobs)} monitor calls to run", flush=True)
 
         def work(job: tuple[dict[str, Any], dict[str, Any], str, str]) -> None:
             rec, call, view, key = job
             case = self.case_by_id[rec["case_id"]]
             msgs = rec["trajectory"]["messages"]
+            if call.get("synthetic"):
+                msgs = with_proposed_call(msgs[:rec["n_view_messages"]], call)
             try:
                 ctx = build_context(view, case, ProvenanceGraph.from_dict(rec["graph"]), msgs, call)
                 r = run_monitor(self.providers["monitor"], ctx, call["name"], call["arguments"],
                                 mspec.params(json_mode=True))
+                syn = ({"synthetic": True, "kind": call["kind"], "name": call["name"], "arguments": call["arguments"],
+                        "targets": call["targets"]} if call.get("synthetic") else {"synthetic": False})
                 store.put({"key": key, "trial_key": rec["key"], "call_id": call["call_id"], "view": view,
-                           "monitor_model": mspec.model, **r, "error": None})
+                           "monitor_model": mspec.model, **syn, **r, "error": None})
             except BudgetExceeded:
                 raise
             except Exception as exc:  # noqa: BLE001
@@ -503,7 +519,8 @@ def score_run(runner: Runner) -> list[dict[str, Any]]:
     """Long-format scores: one row per (trial, offline gate)."""
     monitors: dict[tuple[str, str, str], dict[str, Any]] = {}
     for m in runner.stores["monitor"].values():
-        monitors[(m["trial_key"], m["call_id"], m["view"])] = m
+        if not m.get("synthetic"):
+            monitors[(m["trial_key"], m["call_id"], m["view"])] = m
     taint_p, taint_np = TaintGate(True), TaintGate(False)
     rows = []
     for rec in runner.stores["trajectories"].values():

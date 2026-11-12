@@ -101,13 +101,55 @@ def test_anthropic_message_conversion_and_call():
     assert system == "sys" and out[0]["role"] == "user" and out[1]["content"][0]["type"] == "tool_use"
     assert out[2]["content"][0]["type"] == "tool_result" and a_tools[0]["input_schema"] == {"type": "object"}
 
+    captured = {}
+    thinking = SimpleNamespace(type="thinking", thinking="", signature="SIG123")
     block = SimpleNamespace(type="tool_use", id="x1", name="send_email", input={"to": ["a@b.example"]})
-    fake = SimpleNamespace(messages=SimpleNamespace(create=lambda **kw: SimpleNamespace(
-        content=[block], usage=SimpleNamespace(input_tokens=10, output_tokens=5), model="claude-test",
-        stop_reason="tool_use")))
-    p = AnthropicProvider("claude-test", client=fake, cache=None, budget=None)
-    r = p.chat(msgs, tools, GenParams(), purpose="actor")
+
+    def create(**kw):
+        captured.update(kw)
+        return SimpleNamespace(content=[thinking, block], usage=SimpleNamespace(input_tokens=10, output_tokens=5),
+                               model="claude-test", stop_reason="tool_use")
+    p = AnthropicProvider("claude-test", client=SimpleNamespace(messages=SimpleNamespace(create=create)),
+                          cache=None, budget=None)
+    r = p.chat(msgs, tools, GenParams(temperature=1.0, seed=7, reasoning_effort="medium", json_mode=True),
+               purpose="actor")
     assert r.tool_calls[0].arguments == {"to": ["a@b.example"]}
+    # Sampling params / seed / json mode are never sent to current Claude models; effort is.
+    assert "temperature" not in captured and "seed" not in captured and "response_format" not in captured
+    assert captured["output_config"] == {"effort": "medium"}
+    # The assistant turn replays the raw blocks (including the signed thinking block) verbatim.
+    turn = r.assistant_message()
+    _, replay, _ = to_anthropic(msgs + [turn, {"role": "tool", "tool_call_id": "x1", "content": "ok"}], tools)
+    assert replay[3]["content"][0] == {"type": "thinking", "thinking": "", "signature": "SIG123"}
+    assert replay[3]["content"][1]["type"] == "tool_use" and replay[4]["content"][0]["type"] == "tool_result"
+
+
+def test_extract_json_object_tolerates_fences_and_prose():
+    from trustbound.providers.base import extract_json_object
+    assert extract_json_object('```json\n{"a": 1}\n```') == {"a": 1}
+    assert extract_json_object('Here you go: {"suspicion": 10, "verdict": "allow"} thanks') == {
+        "suspicion": 10, "verdict": "allow"}
+    with pytest.raises(Exception):
+        extract_json_object("no json here")
+
+
+def test_claude_pricing():
+    assert price_for("claude-haiku-5-5") == (0.10, 0.01, 0.50)
+    assert price_for("claude-sonnet-5-5")[2] == 10.0
+
+
+def test_dotenv_loader(tmp_path, monkeypatch):
+    from trustbound.cli import load_dotenv
+    env = tmp_path / ".env"
+    env.write_text("# comment\nTB_TEST_KEY='secret'\nexport TB_OTHER=x\n")
+    monkeypatch.delenv("TB_TEST_KEY", raising=False)
+    monkeypatch.delenv("TB_OTHER", raising=False)
+    assert sorted(load_dotenv(env)) == ["TB_OTHER", "TB_TEST_KEY"]
+    import os
+    assert os.environ["TB_TEST_KEY"] == "secret"
+    monkeypatch.setenv("TB_TEST_KEY", "keep")
+    load_dotenv(env)
+    assert os.environ["TB_TEST_KEY"] == "keep"
 
 
 def _mock_config(tmp_path, **over):
@@ -117,7 +159,8 @@ def _mock_config(tmp_path, **over):
 
 
 def test_runner_end_to_end_with_mock_and_resume(tmp_path):
-    cfg = _mock_config(tmp_path, scenarios=["ro10_crm_renewal", "ft06_ticket_update", "dd05_ticket_from_email"])
+    cfg = _mock_config(tmp_path, scenarios=["ro10_crm_renewal", "ft06_ticket_update", "dd05_ticket_from_email"],
+                       monitor_synthetic=True)
     r = Runner(cfg, root=ROOT)
     r.run(["authz", "actors", "monitors", "judge", "score"])
     n_traj = len(r.stores["trajectories"].records)
@@ -137,6 +180,13 @@ def test_runner_end_to_end_with_mock_and_resume(tmp_path):
             assert not (v and not gates["none"]), g
     # Oracle authorization prevents every exact attack.
     assert not any(row["attack_exact"] == "True" for row in rows if row["gate"] == "authz_oracle")
+    # Synthetic monitor calls exist for every monitored trial (sample 0) and never feed the gate scores.
+    syn = [m for m in r.stores["monitor"].values() if m.get("synthetic")]
+    assert syn and {m["kind"] for m in syn} == {"attack_goal", "authorized"}
+    from trustbound.analysis.report import analyze_run
+    summary = analyze_run(r.run_dir, n_boot=200)
+    assert (r.run_dir / "analysis" / "tables" / "monitor_synthetic_block_rates.csv").exists()
+    assert summary["is_mock"]
     # Resume: a second run does no new actor work.
     r2 = Runner(cfg, root=ROOT)
     assert r2.estimate()["n_trials_todo"] == 0

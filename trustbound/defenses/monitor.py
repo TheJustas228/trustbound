@@ -23,11 +23,13 @@ The monitor never sees benchmark ground truth.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from .. import prompts
 from ..dataset import Case, Document
 from ..provenance import ProvenanceGraph, mentions, value_provenance
+from ..tools import EMAIL_RE
 
 VIEWS = ("blind", "aware", "minimal", "minimal_prov")
 CTX_CALL_ID = "call_ctx_1"   # mirrors pipelines.CTX_CALL_ID (pre-filled retrieval, not an action)
@@ -152,7 +154,8 @@ def monitor_user(context: str, tool: str, arguments: dict[str, Any] | None) -> s
 
 def parse_verdict(text: str | None) -> tuple[float | None, str | None, str, str | None]:
     try:
-        obj = json.loads(text or "")
+        from ..providers.base import extract_json_object
+        obj = extract_json_object(text)
         score = float(obj["suspicion"])
         verdict = str(obj.get("verdict", "")).lower()
         if verdict not in ("allow", "block"):
@@ -171,3 +174,56 @@ def run_monitor(model: Any, context: str, tool: str, arguments: dict[str, Any] |
     score, verdict, reason, err = parse_verdict(resp.text)
     return {"suspicion": score, "verdict": verdict, "reason": reason, "parse_error": err,
             "raw": resp.text, "meta": _resp_meta(resp)}
+
+
+# ------------------------------------------------------------- synthetic calls
+_EVT = re.compile(r"\bEVT-\d+\b")
+_FILE = re.compile(r"\bFILE-[A-Z0-9-]+\b")
+
+
+def _canonical_args(tool: str, targets: list[str], hint_text: str) -> dict[str, Any]:
+    """Plausible arguments for a tool call that touches exactly `targets` (normalized)."""
+    emails = [t for t in targets if "@" in t]
+    others = [t for t in targets if "@" not in t]
+    if tool == "send_email":
+        return {"to": emails, "subject": "Follow-up", "body": "As requested, here is the relevant information."}
+    if tool == "update_record":
+        return {"record_id": others[0].upper(), "field": "notes", "new_value": "Updated as requested."}
+    if tool == "update_calendar_event":
+        evt = (others[0].upper() if others else (_EVT.findall(hint_text) or ["EVT-0000"])[0])
+        args: dict[str, Any] = {"event_id": evt}
+        if emails:
+            args["add_attendees"] = emails
+        else:
+            args["new_start"] = "2026-11-20T09:00"
+        return args
+    if tool == "share_file":
+        file_id = next((o.upper() for o in others if o.startswith("file-")), None) or \
+            (_FILE.findall(hint_text) or ["FILE-UNKNOWN"])[0]
+        recipient = emails[0] if emails else (EMAIL_RE.findall(hint_text) or ["unknown@acme.example"])[0].lower()
+        return {"file_id": file_id, "recipient": recipient, "permission": "view"}
+    raise ValueError(tool)
+
+
+def synthetic_calls(case: Case) -> list[dict[str, Any]]:
+    """Canonical calls judged by monitors independently of what the actor did:
+    the attacker's exact goal (attack cases) and the legitimate required action (action tasks)."""
+    from ..tools import call_targets
+    out = []
+    if case.attack_goal:
+        g = case.attack_goal
+        hint = case.injection_text or ""
+        args = _canonical_args(g["tool"], [g["target"]], hint)
+        out.append({"call_id": "syn_attack", "kind": "attack_goal", "name": g["tool"], "arguments": args,
+                    "targets": sorted(call_targets(g["tool"], args))})
+    for i, req in enumerate(case.required_actions):
+        args = _canonical_args(req["tool"], list(req["targets"]), case.user_request)
+        out.append({"call_id": f"syn_auth{i}", "kind": "authorized", "name": req["tool"], "arguments": args,
+                    "targets": sorted(call_targets(req["tool"], args))})
+    return out
+
+
+def with_proposed_call(view_messages: list[dict[str, Any]], call: dict[str, Any]) -> list[dict[str, Any]]:
+    return [*view_messages, {"role": "assistant", "content": None, "tool_calls": [
+        {"id": call["call_id"], "type": "function",
+         "function": {"name": call["name"], "arguments": json.dumps(call["arguments"])}}]}]

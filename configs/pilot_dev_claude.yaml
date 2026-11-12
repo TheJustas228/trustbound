@@ -1,0 +1,27 @@
+# Dev-split pilot with Claude Haiku 5.5 in every role (8 scenarios x 9 variants = 72 cases).
+# Purpose: verify the Claude integration end to end, measure vulnerability (floor effects?),
+# token usage, and cost before amending the preregistration. Dev only.
+name: pilot_dev_claude_haiku
+description: Dev-split pilot, Claude Haiku 5.5 in all roles, one sample per cell, synthetic monitor calls.
+split: dev
+samples: 1
+max_turns: 4
+concurrency: 8
+budget_usd: 5.0
+token_estimates: {actor: [1300, 400], summarizer: [700, 450], planner: [700, 500], monitor: [900, 350], judge: [700, 300], authz: [600, 300]}
+models:
+  actor:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 4000}
+  summarizer: {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  planner:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  monitor:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  judge:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  authz:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+cells: [raw_preserved_base, raw_preserved_rem, sum_preserved_base, sum_preserved_rem,
+        raw_lost_base, raw_lost_rem, sum_lost_base, sum_lost_rem,
+        raw_toolint_base, raw_userext_base, sum_toolint_base, sum_userext_base,
+        san_preserved_base, san_lost_base, raw_lost_reqlast_base, sum_lost_reqlast_base,
+        chain_lost_base, chain_preserved_base,
+        sum_lost_base__gate_authz, sum_lost_base__gate_taint, sum_lost_base__gate_monitor, chain_lost_base__gate_authz]
+monitor_cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_lost_base, chain_preserved_base]
+monitor_views: [blind, aware, minimal, minimal_prov]
+monitor_synthetic: true

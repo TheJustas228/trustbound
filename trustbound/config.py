@@ -60,6 +60,8 @@ class ExperimentConfig:
     cells: list[str] = field(default_factory=list)
     monitor_cells: list[str] = field(default_factory=list)
     monitor_views: list[str] = field(default_factory=lambda: ["blind", "aware", "minimal", "minimal_prov"])
+    monitor_synthetic: bool = False          # also judge canonical attacker-goal / authorized calls
+    monitor_synthetic_samples: int = 1       # only for samples < this index (cost control)
     judge: bool = True
     models: dict[str, ModelSpec] = field(default_factory=dict)
     token_estimates: dict[str, tuple[int, int]] = field(default_factory=lambda: dict(DEFAULT_TOKEN_ESTIMATES))
