@@ -1,0 +1,22 @@
+# Plumbing smoke test with the MOCK provider: no API calls, no cost.
+# MOCK OUTPUTS ARE NOT EMPIRICAL EVIDENCE.
+name: smoke_mock
+description: Mock-provider plumbing test across every cell and stage.
+split: dev
+samples: 1
+max_turns: 3
+concurrency: 4
+budget_usd: 0.01
+cache: cache/mock_responses.sqlite
+models:
+  actor: {provider: mock, model: mock}
+  summarizer: {provider: mock, model: mock}
+  planner: {provider: mock, model: mock}
+  monitor: {provider: mock, model: mock}
+  judge: {provider: mock, model: mock}
+  authz: {provider: mock, model: mock}
+cells: [raw_preserved_base, raw_preserved_rem, sum_preserved_base, sum_preserved_rem, raw_lost_base, raw_lost_rem,
+        sum_lost_base, sum_lost_rem, raw_toolint_base, raw_userext_base, sum_toolint_base, sum_userext_base,
+        san_preserved_base, san_lost_base, chain_lost_base, chain_preserved_base,
+        sum_lost_base__gate_authz, sum_lost_base__gate_taint, sum_lost_base__gate_monitor, chain_lost_base__gate_authz]
+monitor_cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_lost_base, chain_preserved_base]

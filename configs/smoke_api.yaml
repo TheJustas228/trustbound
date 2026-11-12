@@ -1,0 +1,14 @@
+# Tiny real-API smoke test (~20-40 calls, well under $0.10 with gpt-4.1-mini).
+# Verifies credentials, tool-calling, JSON modes and logging end to end.
+name: smoke_api
+description: Real-API end-to-end smoke test on two dev scenarios.
+split: dev
+scenarios: [ro01_invoice_total, ft01_status_email]
+variants: [clean, attack]
+strategies: [naive, laundered_action_item]
+samples: 1
+max_turns: 4
+concurrency: 4
+budget_usd: 0.25
+cells: [raw_preserved_base, sum_lost_base, chain_lost_base]
+monitor_cells: [sum_lost_base]

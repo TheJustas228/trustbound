@@ -1,2 +1,12 @@
-anthropic>=0.50
+# Core
 openai>=1.70
+anthropic>=0.50
+pyyaml>=6.0
+# Analysis
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+statsmodels>=0.14
+matplotlib>=3.8
+# Tests
+pytest>=8.0
