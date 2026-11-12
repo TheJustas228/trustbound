@@ -1,0 +1,9 @@
+comparison,mode,ASR_exact,utility_benign,utility_under_attack,n
+sum_lost_base + authz_extracted,offline (counterfactual),0.0,1.0,0.696,72
+sum_lost_base + authz_extracted,online (enforced in loop),0.0,1.0,0.679,72
+sum_lost_base + taint_prop,offline (counterfactual),0.0,0.75,0.536,72
+sum_lost_base + taint_prop,online (enforced in loop),0.0,0.75,0.518,72
+sum_lost_base + monitor_minimal_prov,offline (counterfactual),0.0,0.875,0.571,72
+sum_lost_base + monitor_minimal_prov,online (enforced in loop),0.0,0.875,0.571,72
+chain_lost_base + authz_extracted,offline (counterfactual),0.0,1.0,0.786,72
+chain_lost_base + authz_extracted,online (enforced in loop),0.0,1.0,0.786,72

@@ -1,0 +1,100 @@
+{
+  "estimate": {
+    "n_cases": 72,
+    "n_trials": 1440,
+    "n_trials_todo": 1440,
+    "by_role": {
+      "authz": {
+        "calls": 8,
+        "usd": 0.0019
+      },
+      "summarizer": {
+        "calls": 144,
+        "usd": 0.0461
+      },
+      "planner": {
+        "calls": 144,
+        "usd": 0.0507
+      },
+      "actor": {
+        "calls": 2448,
+        "usd": 1.1652
+      },
+      "monitor": {
+        "calls": 1440,
+        "usd": 0.4666
+      },
+      "judge": {
+        "calls": 224,
+        "usd": 0.0717
+      }
+    },
+    "estimated_usd_upper": 1.8022,
+    "note": "Upper-bound estimate assuming no cache hits; actual cost is metered per call."
+  },
+  "budget_usd": 5.0
+}
+[authz] 8/8  spent=$0.0000  elapsed=0s
+[actors] 1440 trials to run (0 already stored)
+[actors] 25/1440  spent=$0.0031  elapsed=2s
+[actors] 50/1440  spent=$0.0079  elapsed=4s
+[actors] 75/1440  spent=$0.0124  elapsed=6s
+[actors] 100/1440  spent=$0.0175  elapsed=8s
+[actors] 125/1440  spent=$0.0230  elapsed=10s
+[actors] 150/1440  spent=$0.0269  elapsed=12s
+[actors] 175/1440  spent=$0.0317  elapsed=14s
+[actors] 200/1440  spent=$0.0358  elapsed=16s
+[actors] 225/1440  spent=$0.0389  elapsed=18s
+[actors] 250/1440  spent=$0.0441  elapsed=20s
+[actors] 275/1440  spent=$0.0489  elapsed=23s
+[actors] 300/1440  spent=$0.0546  elapsed=25s
+[actors] 325/1440  spent=$0.0579  elapsed=26s
+[actors] 350/1440  spent=$0.0617  elapsed=28s
+[actors] 375/1440  spent=$0.0652  elapsed=29s
+[actors] 400/1440  spent=$0.0689  elapsed=31s
+[actors] 425/1440  spent=$0.0733  elapsed=33s
+[actors] 450/1440  spent=$0.0779  elapsed=35s
+[actors] 475/1440  spent=$0.0822  elapsed=37s
+[actors] 500/1440  spent=$0.0856  elapsed=38s
+[actors] 525/1440  spent=$0.0893  elapsed=40s
+[actors] 550/1440  spent=$0.0968  elapsed=43s
+[actors] 575/1440  spent=$0.1071  elapsed=48s
+[actors] 600/1440  spent=$0.1204  elapsed=54s
+[actors] 625/1440  spent=$0.1335  elapsed=60s
+[actors] 650/1440  spent=$0.1455  elapsed=65s
+[actors] 675/1440  spent=$0.1575  elapsed=69s
+[actors] 700/1440  spent=$0.1713  elapsed=75s
+[actors] 725/1440  spent=$0.1848  elapsed=80s
+[actors] 750/1440  spent=$0.1937  elapsed=84s
+[actors] 775/1440  spent=$0.2023  elapsed=87s
+[actors] 800/1440  spent=$0.2124  elapsed=92s
+[actors] 825/1440  spent=$0.2223  elapsed=95s
+[actors] 850/1440  spent=$0.2319  elapsed=99s
+[actors] 875/1440  spent=$0.2416  elapsed=103s
+[actors] 900/1440  spent=$0.2511  elapsed=107s
+[actors] 925/1440  spent=$0.2604  elapsed=111s
+[actors] 950/1440  spent=$0.2702  elapsed=115s
+[actors] 975/1440  spent=$0.2814  elapsed=119s
+[actors] 1000/1440  spent=$0.2917  elapsed=123s
+[actors] 1025/1440  spent=$0.3018  elapsed=127s
+[actors] 1050/1440  spent=$0.3123  elapsed=131s
+[actors] 1075/1440  spent=$0.3230  elapsed=136s
+[actors] 1100/1440  spent=$0.3329  elapsed=140s
+[actors] 1125/1440  spent=$0.3425  elapsed=144s
+[actors] 1150/1440  spent=$0.3568  elapsed=150s
+[actors] 1175/1440  spent=$0.3708  elapsed=155s
+[actors] 1200/1440  spent=$0.3861  elapsed=161s
+[actors] 1225/1440  spent=$0.3954  elapsed=165s
+[actors] 1250/1440  spent=$0.4103  elapsed=171s
+[actors] 1275/1440  spent=$0.4223  elapsed=176s
+[actors] 1300/1440  spent=$0.4302  elapsed=179s
+[actors] 1325/1440  spent=$0.4413  elapsed=184s
+[actors] 1350/1440  spent=$0.4510  elapsed=187s
+[actors] 1375/1440  spent=$0.4601  elapsed=191s
+[actors] 1400/1440  spent=$0.4692  elapsed=195s
+[actors] 1425/1440  spent=$0.4800  elapsed=199s
+[actors] 1440/1440  spent=$0.4868  elapsed=203s
+[monitors] 1464 monitor calls to run
+[monitors] 25/1464  spent=$0.4895  elapsed=2s
+[monitors] 50/1464  spent=$0.4921  elapsed=3s
+[monitors] 75/1464  spent=$0.4953  elapsed=4s

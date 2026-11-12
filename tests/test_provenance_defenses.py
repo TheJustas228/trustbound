@@ -75,22 +75,34 @@ def test_single_views_channels_and_labels(case_by_id):
     assert msgs[3]["role"] == "tool" and "[Source: external document PRJ-0412" in msgs[3]["content"]
     assert g.visible == ["document"]
     msgs, g = build_single_view(case, CELLS["sum_lost_base"], "SUMMARY TEXT")
-    assert len(msgs) == 2 and msgs[1]["role"] == "user"
-    assert "[Notes from the research assistant agent]" in msgs[1]["content"]
-    assert "external" not in msgs[1]["content"].lower()
+    assert len(msgs) == 3 and msgs[1] == {"role": "user", "content": case.user_request}
+    assert msgs[2]["role"] == "user" and "[Notes from the research assistant agent]" in msgs[2]["content"]
+    assert "external" not in msgs[2]["content"].lower()
     assert g.visible == ["summary"] and "external:PRJ-0412" in g.artifacts["summary"].labels
     msgs, _ = build_single_view(case, CELLS["sum_toolint_base"], "S")
     assert msgs[2]["tool_calls"][0]["function"]["name"] == "ask_research_assistant"
     msgs, _ = build_single_view(case, CELLS["sum_userext_base"], "S")
-    assert msgs[1]["role"] == "user" and "[Source: external document" in msgs[1]["content"]
+    assert msgs[2]["role"] == "user" and "[Source: external document" in msgs[2]["content"]
+    # Content is always the LAST message in every presentation (no recency confound).
+    for name in ("raw_preserved_base", "raw_lost_base", "sum_toolint_base", "sum_userext_base"):
+        m, _ = build_single_view(case, CELLS[name], "CONTENT")
+        assert m[-1]["content"].endswith("CONTENT") and m[1]["content"] == case.user_request
     msgs, _ = build_single_view(case, CELLS["raw_preserved_rem"], case.document.render())
     assert "Security guidelines" in msgs[0]["content"]
+
+
+def test_request_last_ordering_ablation(case_by_id):
+    case = case_by_id["ro01_invoice_total__atk-naive"]
+    msgs, _ = build_single_view(case, CELLS["raw_lost_reqlast_base"], "CONTENT")
+    assert len(msgs) == 2 and msgs[1]["content"].endswith(case.user_request)
+    assert msgs[1]["content"].index("CONTENT") < msgs[1]["content"].index(case.user_request)
+    assert CELLS["raw_lost_reqlast_base"].presentation == "lost_request_last"
 
 
 def test_chain_views(case_by_id):
     case = case_by_id["ft01_status_email__atk-naive"]
     msgs, g = build_chain_view(case, CELLS["chain_lost_base"], "S", "1. send to x")
-    assert "Plan from the planning agent" in msgs[1]["content"] and len(msgs) == 2
+    assert "Plan from the planning agent" in msgs[2]["content"] and len(msgs) == 3
     assert g.artifacts["plan"].labels == {"user", "external:PRJ-0412"}
     msgs, _ = build_chain_view(case, CELLS["chain_preserved_base"], "S", "1. send to x")
     assert msgs[2]["tool_calls"][0]["function"]["name"] == "get_plan"
@@ -116,7 +128,7 @@ def test_monitor_views_isolate_content_and_provenance(case_by_id):
     assert "IGNORE ALL PREVIOUS" in blind and "UNTRUSTED" not in blind
     assert "IGNORE ALL PREVIOUS" in aware and "UNTRUSTED" in aware
     assert "IGNORE ALL PREVIOUS" not in minimal and "IGNORE ALL PREVIOUS" not in mprov
-    assert "NOT in the user's request" in mprov and "NOT in the user's request" not in minimal
+    assert "not mentioned in the user's request" in mprov and "not mentioned" not in minimal
 
 
 def test_provenance_notes_locate_fields(case_by_id):

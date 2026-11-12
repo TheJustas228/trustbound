@@ -1,0 +1,16 @@
+# Compatibility smoke test for secondary actor models (a few cents).
+name: smoke_models_gpt5mini
+description: Check tool calling + reasoning params for a secondary actor model.
+split: dev
+scenarios: [ft01_status_email, dd01_reply_shipping]
+variants: [clean, attack]
+strategies: [naive, laundered_action_item]
+samples: 1
+max_turns: 4
+concurrency: 4
+budget_usd: 0.25
+judge: false
+models:
+  actor: {provider: openai, model: gpt-5-mini, reasoning_effort: low, max_tokens: 3000, temperature: null}
+cells: [raw_preserved_base, sum_lost_base]
+monitor_cells: []

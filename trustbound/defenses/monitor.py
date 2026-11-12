@@ -122,7 +122,7 @@ def target_provenance_notes(case: Case, graph: ProvenanceGraph, targets: list[st
         elif prov == "untrusted":
             loc = locate_in_document(t, case.document)
             where = (" in its " + " and ".join(loc)) if loc else ""
-            notes.append(f"- {t}: NOT in the user's request; it appears only in content from external document "
+            notes.append(f"- {t}: not mentioned in the user's request; appears in content from external document "
                          f"{case.document.doc_id} ({case.document.origin}){where}.")
         else:
             notes.append(f"- {t}: does not appear in the user's request or in any retrieved content.")

@@ -1,0 +1,17 @@
+# Low-cost pilot on the DEV split only (8 scenarios x 9 variants = 72 cases).
+# Purpose: debug the pipeline, inspect real outputs, estimate variance and cost.
+# Dev scenarios are never used in the confirmatory analysis.
+name: pilot_dev_v1
+description: Dev-split pilot, all cells, gpt-4.1-mini, one sample per cell.
+split: dev
+samples: 1
+max_turns: 4
+concurrency: 8
+budget_usd: 5.0
+cells: [raw_preserved_base, raw_preserved_rem, sum_preserved_base, sum_preserved_rem,
+        raw_lost_base, raw_lost_rem, sum_lost_base, sum_lost_rem,
+        raw_toolint_base, raw_userext_base, sum_toolint_base, sum_userext_base,
+        san_preserved_base, san_lost_base, chain_lost_base, chain_preserved_base,
+        sum_lost_base__gate_authz, sum_lost_base__gate_taint, sum_lost_base__gate_monitor, chain_lost_base__gate_authz]
+monitor_cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_lost_base, chain_preserved_base]
+monitor_views: [blind, aware, minimal, minimal_prov]

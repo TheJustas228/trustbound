@@ -24,8 +24,8 @@ DEFAULT_MODELS: dict[str, dict[str, Any]] = {
 
 # Rough per-call token estimates (input, output) used only for pre-run cost estimates.
 DEFAULT_TOKEN_ESTIMATES: dict[str, tuple[int, int]] = {
-    "actor": (1300, 150), "summarizer": (650, 160), "planner": (550, 220),
-    "monitor": (950, 70), "judge": (600, 60), "authz": (450, 90),
+    "actor": (750, 110), "summarizer": (320, 120), "planner": (320, 140),
+    "monitor": (550, 65), "judge": (560, 60), "authz": (320, 70),
 }
 
 
@@ -51,6 +51,7 @@ class ExperimentConfig:
     variants: list[str] = field(default_factory=lambda: ["clean", "benign", "attack"])
     strategies: list[str] | str = "all"
     samples: int = 1
+    samples_by_cell: dict[str, int] = field(default_factory=dict)   # per-cell override of `samples`
     max_turns: int = 4
     concurrency: int = 8
     budget_usd: float = 5.0
@@ -63,12 +64,15 @@ class ExperimentConfig:
     models: dict[str, ModelSpec] = field(default_factory=dict)
     token_estimates: dict[str, tuple[int, int]] = field(default_factory=lambda: dict(DEFAULT_TOKEN_ESTIMATES))
     avg_actor_turns: float = 1.7
-    avg_monitored_calls_per_trajectory: float = 0.9
+    avg_monitored_calls_per_trajectory: float = 0.8
     raw: dict[str, Any] = field(default_factory=dict)
 
     @property
     def run_dir(self) -> Path:
         return Path(self.results_root) / self.name
+
+    def samples_for(self, cell: str) -> int:
+        return int(self.samples_by_cell.get(cell, self.samples))
 
     def strategy_list(self) -> list[str]:
         return list(STRATEGIES) if self.strategies == "all" else list(self.strategies)
@@ -97,6 +101,9 @@ def validate_config(cfg: ExperimentConfig) -> None:
     unknown = [c for c in cfg.cells + cfg.monitor_cells if c not in CELLS]
     if unknown:
         raise ValueError(f"unknown cells: {unknown}")
+    bad_sc = [c for c in cfg.samples_by_cell if c not in cfg.cells]
+    if bad_sc or any(int(v) < 1 for v in cfg.samples_by_cell.values()):
+        raise ValueError(f"samples_by_cell must name configured cells with k >= 1: {bad_sc}")
     missing = [c for c in cfg.monitor_cells if c not in cfg.cells]
     if missing:
         raise ValueError(f"monitor_cells must be a subset of cells: {missing}")

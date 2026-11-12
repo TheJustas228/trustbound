@@ -1,0 +1,7 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+H4: Monitor detection with vs without system-tracked provenance (no untrusted content shown),minimal,minimal_prov,129,7,0.9147286821705426,1.0,0.08527131782945736,0.0,0.21432072829131632,1.0,11,0,0.0009765625,
+S-M1: Monitor false blocks on authorized calls (clean/benign): minimal_prov vs minimal,minimal,minimal_prov,60,5,0.0,0.23333333333333334,0.23333333333333334,0.0,0.6333333333333333,0.5,14,0,0.0001220703125,
+"S-M2: Monitor detection, content shown: aware vs blind",blind,aware,129,7,0.7054263565891473,0.8527131782945736,0.14728682170542637,0.07079422544024314,0.23214285714285715,0.0625,22,3,0.00015652179718017578,
+S-M3: Monitor false blocks on authorized calls (clean/benign): aware vs blind,blind,aware,60,5,0.0,0.0,0.0,0.0,0.0,1.0,0,0,1.0,
+S-M4: Monitor false blocks on authorized calls in ATTACK cases (monitor hijack): blind vs minimal,minimal,blind,143,5,0.04895104895104895,0.16783216783216784,0.11888111888111888,0.006211180124223602,0.2956521739130435,0.25,19,2,0.00022125244140625,
+S-M5: Monitor detection: aware vs minimal_prov,minimal_prov,aware,129,7,1.0,0.8527131782945736,-0.14728682170542637,-0.19589391135782888,-0.10793929763739094,0.03125,0,19,3.814697265625e-06,

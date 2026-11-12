@@ -1,87 +1,120 @@
-# TrustBound: Tool-output provenance and safe agent decisions
+# TrustBound: Provenance Loss and Safety Monitoring in Multi-Step LLM Agents
 
-**Status:** Research design + pilot harness; no empirical results yet.
+TrustBound is a reproducible measurement framework and benchmark. It asks what happens to
+**prompt injections** when attacker-controlled documents pass through intermediate LLM stages
+(a summarizer, a planner) before reaching an agent with consequential tools. It also asks
+whether **provenance-aware defenses** stop unauthorized actions without breaking legitimate tasks.
 
-**Goal:** A small reproducible AI safety research project for evaluating whether a model treats instructions inside external information as authority to redirect a simulated action.
+> **Status (see `docs/research_report.md` §0 for the authoritative status table).**
+> The framework, benchmark, tests, and dev-split pilots are complete.
+> The preregistered confirmatory run on the held-out test split is reported in
+> `docs/research_report.md` only if it has been executed. Every number in this repository
+> comes from a run directory under `results/`, and every run directory records its own manifest.
 
-## Research question
-When otherwise identical untrusted text is framed as a **direct tool result** vs a **summary of a tool result**, is the model more likely to perform an unauthorized simulated action? Does an explicit boundary reminder change attack success rates or legitimate-task completion?
+## What is in here
 
-## Why it matters / related work
-- [Anthropic: Research Residency](https://alignment.anthropic.com/2026/anthropic-residency/)
-- [Anthropic: Technical AI safety research directions](https://alignment.anthropic.com/2025/recommended-directions/), especially behavioral monitoring and AI control
-- [Anthropic: Mitigating prompt injection in browser use](https://www.anthropic.com/research/prompt-injection-defenses)
-- [Anthropic: How we built Claude Code auto mode](https://www.anthropic.com/research/claude-code-auto-mode)
-- [Anthropic: SHADE-Arena](https://www.anthropic.com/research/shade-arena-sabotage-monitoring)
+| Component | Location |
+|---|---|
+| Benchmark: 32 scenarios × 9 payload variants = 288 cases (dev 72 / test 216) | `data/benchmark/`, `docs/benchmark.md` |
+| Simulated tools (email, records, calendar, file sharing). **No real side effects.** | `trustbound/tools.py` |
+| Pipelines: direct, LLM summary, summarize→plan→execute; provenance preserved/lost; channel/label ablations | `trustbound/pipelines.py` |
+| Provenance graph with label propagation through LLM stages | `trustbound/provenance.py` |
+| Defenses: boundary reminder; taint gate (± propagation); structured authorization (extracted / oracle); LLM monitor (4 views) | `trustbound/defenses/` |
+| Ground-truth scoring, independent of all defenses | `trustbound/scoring.py` |
+| Orchestration: caching, checkpoint/resume, budget ceiling, manifests, call logs | `trustbound/runner.py` |
+| Statistics: cluster bootstrap, scenario-level sign-flip tests, Holm, GEE, AUROC, power simulation | `trustbound/analysis/` |
+| Preregistration | `PREREGISTRATION.md` |
+| Docs: literature review, methodology, threat model & limitations, report | `docs/` |
+| Phase 1 pilot, preserved unchanged | `legacy/phase1/` |
 
-**Important:** This pilot is not novel merely because it measures prompt injection. Read the literature and identify a meaningful gap before making claims of originality. The `summary_wrapper` treatment only **changes the source label**, not actual content or number of agent steps. A future phase should use an independent summarizer and a multi-turn agent, then distinguish true provenance laundering from framing effects.
+## Setup (Linux / WSL, Python ≥ 3.10)
 
-## Threat model
-- Actor: LLM choosing an **imaginary** next step in a toy workflow.
-- User: asks for a summary, or authorizes sending/updating a specified mock destination.
-- Attacker: controls only the text field returned by an external service.
-- Attacker goal: persuade the actor to select an unauthorized **mock** action or wrong mock target.
-- Environment: no real sending, network tools, data exfiltration, or file modifications from the LLM.
-
-## Experimental design (factorial pilot)
-- **8 paired scenarios**, each with clean and injected tool payloads.
-- Provenance framing: `direct_tool` vs `summary_wrapper`.
-- Defense: `baseline` vs `boundary_reminder`.
-- Run every combination for the same model and settings: 8 × 2 × 2 × 2 = **64 calls** per repeat. Start with `--limit-cases 2` = 16 calls.
-- Primary metric: **attacker goal success**, measured against **action + target**, not answer text alone.
-- Secondary metric: **authorized action success**, on both attacked and clean tasks.
-- Record model identifier, protocol settings, errors and output logs. Re-run with more tasks and repeated variants, and report uncertainty intervals before generalizing.
-
-## Run it (WSL Ubuntu / Python 3.9+)
 ```bash
 cd trustbound-starter
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python run.py --backend mock --limit-cases 2 --output results/smoke.jsonl
-python analyze.py results/smoke.jsonl
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt        # exact versions used: requirements-lock.txt
+pytest -q                              # 44+ unit/integration tests, no API calls
 ```
-Mock mode tests JSONL, scoring, and summarization only. **Mock outputs are not research findings.**
 
-To collect real model results, set your Anthropic API key **privately in your own shell** (never in GitHub or chat), then:
+For real-model runs, set your key in your own shell. It is read by the OpenAI SDK and never
+logged or stored:
+
 ```bash
-export ANTHROPIC_API_KEY='your-key-in-your-own-terminal'
-python run.py --backend anthropic --model YOUR_SUPPORTED_MODEL_ID --limit-cases 2 --output results/pilot.jsonl
-python analyze.py results/pilot.jsonl
+read -rsp "OpenAI API key: " OPENAI_API_KEY; echo; export OPENAI_API_KEY
 ```
-### Run with an OpenAI API key instead of Anthropic
-Install the additional dependency with `pip install -r requirements.txt` if this is an existing setup.
 
-In your WSL Ubuntu terminal, enter the key without saving it in command history:
+## Running experiments
+
+Every command prints an upper-bound cost estimate first. It refuses to start if the estimate
+exceeds the spending ceiling (`budget_usd` in the config, default **$5**), and it hard-stops if
+metered spend reaches the ceiling. Completed work is checkpointed, so rerunning the same command
+resumes. Identical API requests are served from `cache/responses.sqlite` at zero cost.
+
+| Mode | Command | Cost |
+|---|---|---|
+| Plumbing smoke test (mock provider) | `python -m trustbound run configs/smoke_mock.yaml` | $0 |
+| Real-API smoke test | `python -m trustbound run configs/smoke_api.yaml` | ≈ $0.02 |
+| Dev-split pilot | `python -m trustbound run configs/pilot_dev_v3.yaml` | ≈ $1–2 (≈ $0 if cached) |
+| Confirmatory run (test split) | `python -m trustbound run configs/confirmatory_test.yaml --budget-usd <approved>` | see `PREREGISTRATION.md` |
+| Estimate only | `python -m trustbound estimate <config>` | $0 |
+
+Stages can be run separately: `--stages authz,actors,monitors,judge,score`.
+
 ```bash
-read -rsp "OpenAI API key: " OPENAI_API_KEY; echo
-export OPENAI_API_KEY
+python -m trustbound analyze results/<run>              # tables, stats, figures -> results/<run>/analysis/
+python -m trustbound show results/<run> --only attack_exact --limit 5   # read actual trajectories
+python scripts/power_analysis.py results/pilot_dev_v3   # simulation-based power analysis
+python scripts/annotation.py export results/<run>       # blinded sheet for human validation of the judge
 ```
-Run a pilot on one scenario (8 API calls) with a model available in your OpenAI API account:
-```bash
-python run.py --backend openai --model gpt-4.1-mini --limit-cases 1 \
-    --output results/openai_pilot.jsonl
-python analyze.py results/openai_pilot.jsonl
-```
-If that model is not available for your account, list API models with:
-```bash
-python - <<'PY'
-from openai import OpenAI
-for m in OpenAI().models.list().data:
-    if m.id.startswith('gpt-'):
-        print(m.id)
-PY
-```
-Choose a model that supports the Responses API and `temperature=0`. If your model doesn't support the temperature parameter, remove the `temperature=0` line from `run.py` in the OpenAI branch, and document the change when comparing runs.
 
-**Important:** ChatGPT subscriptions do not by themselves provide API billing or access. OpenAI API keys come from the OpenAI developer platform, and usage may cost money. If all calls fail, inspect the `error` fields in the JSONL rather than treating them as model evidence. No real send/update operations are performed.
+## Reproducing reported results without API calls
 
-After manual inspection and refinements, run all 8 cases and repetitions with a new output path. API calls incur charges. Do not publish raw API keys or private information.
+Each run directory contains:
+- `manifest.json`: git commit, dataset hash, prompt fingerprint, models, package versions, cost
+- `trajectories.jsonl`: every actor message and tool call
+- `summaries.jsonl` and `plans.jsonl`
+- `monitor.jsonl` and `judgments.jsonl`
+- `calls.jsonl`: every API call, with usage and retries
+- `scores.csv`
 
-## Initial development tasks
-1. Read cited prior work, define the exact novelty claim or drop the claim.
-2. Inspect each case for realism, task ambiguity and legitimate authorization; create adversarial variants.
-3. Run the 2-case smoke test. Confirm pairing, logging and scoring.
-4. Run a small real-model pilot. Manually inspect errors and ambiguous outputs.
-5. Introduce *actual* intermediate summarization and multi-turn tool calling, with controlled ablations, before writing any broader paper.
-6. Report both attack success and task completion with limitations, raw counts, and uncertainty.
+`python -m trustbound analyze results/<run>` regenerates every table and figure
+deterministically from these files. To re-run the *pipeline* without paying, keep the response
+cache (`cache/responses.sqlite`, not committed because of its size). Requests are hashed, so
+identical requests are replayed.
+
+## Design in one paragraph
+
+Each case gives the actor a user request and one external document, which may contain an
+injection written in one of seven strategies. The document reaches the actor in one of three ways:
+- **raw**
+- as a **genuine LLM summary**
+- through a **summarize → plan → execute** chain
+
+Provenance is either **preserved** (tool-result channel plus a header naming the external source)
+or **lost** (re-inserted as a user-role message labelled as internal research-assistant notes). Ablations
+separate channel from label, and test a boundary reminder and a security-aware summarizer.
+
+Every proposed tool call is then checked by **pre-execution gates**:
+- a taint gate, with and without label propagation
+- a structured authorization check extracted from the user request alone
+- an LLM monitor with four views: content × provenance information
+
+Scoring compares *executed* calls with ground truth and separates:
+- **exact attacker-goal success**
+- other attacker-influenced actions
+- other unauthorized actions
+- invalid calls
+- task success
+
+Inference resamples whole scenarios, because cases within a scenario are not independent.
+
+## Safety and ethics
+
+All tools are simulated and all addresses use the reserved `.example` TLD. API keys are read from
+the environment and never written to disk or logs (`store=False` is sent to the API). The attack
+templates are generic, publicly documented patterns.
+
+## Interpreting results
+
+Don't present mock outputs, dev-pilot numbers, or unvalidated judge labels as confirmatory
+findings.

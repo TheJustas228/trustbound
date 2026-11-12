@@ -1,0 +1,86 @@
+{
+  "pilot": [
+    {
+      "cell": "raw_preserved_base",
+      "pilot_asr": 0.625,
+      "sigma_scenario_logit": 1.66,
+      "n_scenarios": 8
+    },
+    {
+      "cell": "sum_preserved_base",
+      "pilot_asr": 0.357,
+      "sigma_scenario_logit": 1.24,
+      "n_scenarios": 8
+    },
+    {
+      "cell": "sum_lost_base",
+      "pilot_asr": 0.482,
+      "sigma_scenario_logit": 1.73,
+      "n_scenarios": 8
+    },
+    {
+      "cell": "chain_preserved_base",
+      "pilot_asr": 0.214,
+      "sigma_scenario_logit": 1.194,
+      "n_scenarios": 8
+    },
+    {
+      "cell": "chain_lost_base",
+      "pilot_asr": 0.304,
+      "sigma_scenario_logit": 0.979,
+      "n_scenarios": 8
+    }
+  ],
+  "sigma": 1.2402103055280356,
+  "sigma_effect": 0.75,
+  "effect_heterogeneity": {
+    "raw_preserved_base->sum_preserved_base": 0.0,
+    "sum_preserved_base->sum_lost_base": 0.0,
+    "chain_preserved_base->chain_lost_base": 0.0,
+    "raw_preserved_base->raw_lost_base": 0.0
+  },
+  "baseline": 0.35714285714285715,
+  "clusters": 24,
+  "grid": [
+    {
+      "obs_per_cluster": 7,
+      "risk_difference": 0.05,
+      "power": 0.103
+    },
+    {
+      "obs_per_cluster": 7,
+      "risk_difference": 0.1,
+      "power": 0.393
+    },
+    {
+      "obs_per_cluster": 7,
+      "risk_difference": 0.15,
+      "power": 0.703
+    },
+    {
+      "obs_per_cluster": 7,
+      "risk_difference": 0.2,
+      "power": 0.94
+    },
+    {
+      "obs_per_cluster": 14,
+      "risk_difference": 0.05,
+      "power": 0.177
+    },
+    {
+      "obs_per_cluster": 14,
+      "risk_difference": 0.1,
+      "power": 0.61
+    },
+    {
+      "obs_per_cluster": 14,
+      "risk_difference": 0.15,
+      "power": 0.927
+    },
+    {
+      "obs_per_cluster": 14,
+      "risk_difference": 0.2,
+      "power": 0.997
+    }
+  ]
+}

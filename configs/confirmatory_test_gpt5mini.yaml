@@ -1,0 +1,14 @@
+# PREREGISTERED SECONDARY RUN — same test split and intermediate agents (gpt-4.1-mini summarizer/planner,
+# shared via the response cache); only the ACTOR model changes. Core cells, one sample, no monitors.
+name: confirmatory_test_gpt5mini
+description: Preregistered secondary run, actor model gpt-5-mini (reasoning_effort=low).
+split: test
+samples: 1
+max_turns: 4
+concurrency: 8
+budget_usd: 5.0
+judge: false
+models:
+  actor: {provider: openai, model: gpt-5-mini, reasoning_effort: low, temperature: null, max_tokens: 3000}
+cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_preserved_base, chain_lost_base]
+monitor_cells: []

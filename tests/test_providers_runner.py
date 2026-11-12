@@ -153,3 +153,12 @@ def test_summaries_are_shared_across_cells(tmp_path):
     trajs = r.stores["trajectories"].values()
     keys = {t["summary_key"] for t in trajs if "summary_key" in t}
     assert len(keys) == 1 and len(r.stores["summaries"].records) == 1
+
+
+def test_samples_by_cell(tmp_path):
+    cfg = _mock_config(tmp_path, scenarios=["ft06_ticket_update"], variants=["clean"], samples=1,
+                       cells=["raw_preserved_base", "sum_lost_base"], monitor_cells=[],
+                       samples_by_cell={"sum_lost_base": 3})
+    trials = Runner(cfg, root=ROOT).planned_trials()
+    assert sum(1 for _, c, _ in trials if c.name == "sum_lost_base") == 3
+    assert sum(1 for _, c, _ in trials if c.name == "raw_preserved_base") == 1

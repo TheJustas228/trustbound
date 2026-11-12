@@ -1,0 +1,414 @@
+{
+  "name": "pilot_dev_v1",
+  "description": "Dev-split pilot, all cells, gpt-4.1-mini, one sample per cell.",
+  "status": "finished",
+  "updated_at": "2026-11-12T02:33:57+0100",
+  "trustbound_version": "2.0.0",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "packages": {
+    "openai": "3.49.0",
+    "anthropic": "2.8.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "pandas": "3.1.1",
+    "statsmodels": "0.15.0",
+    "matplotlib": "3.11.2",
+    "pyyaml": "6.0.3"
+  },
+  "git": {
+    "commit": "4381745fe8322b2e2d2d3f1bddacbb68df152e78",
+    "dirty": true
+  },
+  "config": {
+    "name": "pilot_dev_v1",
+    "description": "Dev-split pilot, all cells, gpt-4.1-mini, one sample per cell.",
+    "split": "dev",
+    "samples": 1,
+    "max_turns": 4,
+    "concurrency": 8,
+    "budget_usd": 5.0,
+    "cells": [
+      "raw_preserved_base",
+      "raw_preserved_rem",
+      "sum_preserved_base",
+      "sum_preserved_rem",
+      "raw_lost_base",
+      "raw_lost_rem",
+      "sum_lost_base",
+      "sum_lost_rem",
+      "raw_toolint_base",
+      "raw_userext_base",
+      "sum_toolint_base",
+      "sum_userext_base",
+      "san_preserved_base",
+      "san_lost_base",
+      "chain_lost_base",
+      "chain_preserved_base",
+      "sum_lost_base__gate_authz",
+      "sum_lost_base__gate_taint",
+      "sum_lost_base__gate_monitor",
+      "chain_lost_base__gate_authz"
+    ],
+    "monitor_cells": [
+      "raw_preserved_base",
+      "sum_preserved_base",
+      "raw_lost_base",
+      "sum_lost_base",
+      "chain_lost_base",
+      "chain_preserved_base"
+    ],
+    "monitor_views": [
+      "blind",
+      "aware",
+      "minimal",
+      "minimal_prov"
+    ]
+  },
+  "models": {
+    "actor": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 1.0,
+      "max_tokens": 600,
+      "reasoning_effort": null
+    },
+    "summarizer": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 1.0,
+      "max_tokens": 300,
+      "reasoning_effort": null
+    },
+    "planner": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 1.0,
+      "max_tokens": 400,
+      "reasoning_effort": null
+    },
+    "monitor": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 200,
+      "reasoning_effort": null
+    },
+    "judge": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 200,
+      "reasoning_effort": null
+    },
+    "authz": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 300,
+      "reasoning_effort": null
+    }
+  },
+  "cells": {
+    "raw_preserved_base": {
+      "name": "raw_preserved_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "raw_preserved_rem": {
+      "name": "raw_preserved_rem",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "reminder",
+      "gate": "none"
+    },
+    "sum_preserved_base": {
+      "name": "sum_preserved_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "sum_preserved_rem": {
+      "name": "sum_preserved_rem",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "reminder",
+      "gate": "none"
+    },
+    "raw_lost_base": {
+      "name": "raw_lost_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "raw_lost_rem": {
+      "name": "raw_lost_rem",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "reminder",
+      "gate": "none"
+    },
+    "sum_lost_base": {
+      "name": "sum_lost_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "sum_lost_rem": {
+      "name": "sum_lost_rem",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "reminder",
+      "gate": "none"
+    },
+    "raw_toolint_base": {
+      "name": "raw_toolint_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "tool",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "raw_userext_base": {
+      "name": "raw_userext_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "user",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "sum_toolint_base": {
+      "name": "sum_toolint_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "tool",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "sum_userext_base": {
+      "name": "sum_userext_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "san_preserved_base": {
+      "name": "san_preserved_base",
+      "pipeline": "single",
+      "content": "summary_sanitized",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "san_lost_base": {
+      "name": "san_lost_base",
+      "pipeline": "single",
+      "content": "summary_sanitized",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "chain_lost_base": {
+      "name": "chain_lost_base",
+      "pipeline": "chain",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "lost",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "chain_preserved_base": {
+      "name": "chain_preserved_base",
+      "pipeline": "chain",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none"
+    },
+    "sum_lost_base__gate_authz": {
+      "name": "sum_lost_base__gate_authz",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "authz_extracted"
+    },
+    "sum_lost_base__gate_taint": {
+      "name": "sum_lost_base__gate_taint",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "taint_prop"
+    },
+    "sum_lost_base__gate_monitor": {
+      "name": "sum_lost_base__gate_monitor",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "monitor_minimal_prov"
+    },
+    "chain_lost_base__gate_authz": {
+      "name": "chain_lost_base__gate_authz",
+      "pipeline": "chain",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "lost",
+      "prompt": "baseline",
+      "gate": "authz_extracted"
+    }
+  },
+  "dataset": {
+    "cases_sha256": "50c7a8fc0dbcb6d47712d88e0944ab03ea5e32ba8cea1e29c6fa58fac22f8514",
+    "scenarios_sha256": "15b2ecdb1e6a5967ced7571a405f9cbffeb7d89a70a8f679d891762fc74062be",
+    "n_cases_selected": 72
+  },
+  "prompt_fingerprint": "2e97402a22fc554c1fd75228f15fe7c9c083b7632335b0be95b8fe3e34656d8f",
+  "pricing_source": "https://developers.openai.com/api/docs/pricing (retrieved 2026-11-12)",
+  "budget_this_invocation": {
+    "ceiling_usd": 5.0,
+    "spent_usd": 1.283787,
+    "n_paid_calls": 4223,
+    "input_tokens": 2231183,
+    "output_tokens": 244571
+  },
+  "history": [
+    {
+      "status": "started",
+      "at": "2026-11-12T02:24:30+0100",
+      "stages": [
+        "authz",
+        "actors",
+        "monitors",
+        "judge",
+        "score"
+      ],
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:authz",
+      "at": "2026-11-12T02:24:32+0100",
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 0.001039,
+        "n_paid_calls": 6,
+        "input_tokens": 1558,
+        "output_tokens": 260
+      }
+    },
+    {
+      "status": "completed:actors",
+      "at": "2026-11-12T02:30:53+0100",
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 0.879559,
+        "n_paid_calls": 2711,
+        "input_tokens": 1504937,
+        "output_tokens": 173490
+      }
+    },
+    {
+      "status": "completed:monitors",
+      "at": "2026-11-12T02:33:29+0100",
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 1.220697,
+        "n_paid_calls": 3999,
+        "input_tokens": 2111035,
+        "output_tokens": 235177
+      }
+    },
+    {
+      "status": "completed:judge",
+      "at": "2026-11-12T02:33:56+0100",
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 1.283787,
+        "n_paid_calls": 4223,
+        "input_tokens": 2231183,
+        "output_tokens": 244571
+      }
+    },
+    {
+      "status": "completed:score",
+      "at": "2026-11-12T02:33:57+0100",
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 1.283787,
+        "n_paid_calls": 4223,
+        "input_tokens": 2231183,
+        "output_tokens": 244571
+      }
+    },
+    {
+      "status": "finished",
+      "at": "2026-11-12T02:33:57+0100",
+      "budget": {
+        "ceiling_usd": 5.0,
+        "spent_usd": 1.283787,
+        "n_paid_calls": 4223,
+        "input_tokens": 2231183,
+        "output_tokens": 244571
+      }
+    }
+  ]
+}

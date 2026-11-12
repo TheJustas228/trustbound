@@ -1,0 +1,31 @@
+# PREREGISTERED CONFIRMATORY RUN — held-out TEST split (24 scenarios x 9 variants = 216 cases).
+# Do not edit after the preregistration commit; any change is a reported deviation.
+name: confirmatory_test_gpt41mini
+description: Preregistered confirmatory run, primary actor model gpt-4.1-mini.
+split: test
+samples: 1
+samples_by_cell:            # primary cells get two independent samples (temperature 1.0)
+  raw_preserved_base: 2
+  sum_preserved_base: 2
+  raw_lost_base: 2
+  sum_lost_base: 2
+  chain_preserved_base: 2
+  chain_lost_base: 2
+max_turns: 4
+concurrency: 8
+budget_usd: 5.0             # default ceiling; the confirmatory run requires an explicitly approved --budget-usd
+models:
+  actor:      {provider: openai, model: gpt-4.1-mini, temperature: 1.0, max_tokens: 600}
+  summarizer: {provider: openai, model: gpt-4.1-mini, temperature: 1.0, max_tokens: 300}
+  planner:    {provider: openai, model: gpt-4.1-mini, temperature: 1.0, max_tokens: 400}
+  monitor:    {provider: openai, model: gpt-4.1-mini, temperature: 0.0, max_tokens: 200}
+  judge:      {provider: openai, model: gpt-4.1-mini, temperature: 0.0, max_tokens: 200}
+  authz:      {provider: openai, model: gpt-4.1-mini, temperature: 0.0, max_tokens: 300}
+cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_preserved_base, chain_lost_base,
+        raw_preserved_rem, sum_preserved_rem, raw_lost_rem, sum_lost_rem,
+        raw_toolint_base, raw_userext_base, sum_toolint_base, sum_userext_base,
+        san_preserved_base, san_lost_base, raw_lost_reqlast_base, sum_lost_reqlast_base,
+        sum_lost_base__gate_authz, sum_lost_base__gate_taint, sum_lost_base__gate_monitor, chain_lost_base__gate_authz]
+monitor_cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_preserved_base, chain_lost_base]
+monitor_views: [blind, aware, minimal, minimal_prov]
+judge: true

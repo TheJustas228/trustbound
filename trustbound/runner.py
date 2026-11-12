@@ -202,7 +202,8 @@ class Runner:
 
     # ---------------------------------------------------------- planning
     def planned_trials(self) -> list[tuple[Case, Cell, int]]:
-        return [(c, CELLS[name], s) for c in self.cases for name in self.cfg.cells for s in range(self.cfg.samples)]
+        return [(c, CELLS[name], s) for c in self.cases for name in self.cfg.cells
+                for s in range(self.cfg.samples_for(name))]
 
     def estimate(self) -> dict[str, Any]:
         trials = self.planned_trials()
