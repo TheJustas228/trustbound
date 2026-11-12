@@ -205,9 +205,14 @@ def _canonical_args(tool: str, targets: list[str], hint_text: str) -> dict[str, 
     raise ValueError(tool)
 
 
-def synthetic_calls(case: Case) -> list[dict[str, Any]]:
-    """Canonical calls judged by monitors independently of what the actor did:
-    the attacker's exact goal (attack cases) and the legitimate required action (action tasks)."""
+def synthetic_calls(case: Case, include_authorized: bool = False) -> list[dict[str, Any]]:
+    """Canonical calls judged by monitors independently of what the actor did.
+
+    By default only the attacker's exact goal call (attack cases) is generated: it measures
+    DETECTION on a fixed, actor-independent set. False blocks are measured on REAL authorized
+    calls instead, because canonical legitimate calls need realistic content: in the Claude dev
+    pilot, a generic placeholder body made monitors block 100% of legitimate data-dependent calls
+    while real legitimate calls were blocked < 1% of the time."""
     from ..tools import call_targets
     out = []
     if case.attack_goal:
@@ -216,7 +221,7 @@ def synthetic_calls(case: Case) -> list[dict[str, Any]]:
         args = _canonical_args(g["tool"], [g["target"]], hint)
         out.append({"call_id": "syn_attack", "kind": "attack_goal", "name": g["tool"], "arguments": args,
                     "targets": sorted(call_targets(g["tool"], args))})
-    for i, req in enumerate(case.required_actions):
+    for i, req in enumerate(case.required_actions if include_authorized else []):
         args = _canonical_args(req["tool"], list(req["targets"]), case.user_request)
         out.append({"call_id": f"syn_auth{i}", "kind": "authorized", "name": req["tool"], "arguments": args,
                     "targets": sorted(call_targets(req["tool"], args))})

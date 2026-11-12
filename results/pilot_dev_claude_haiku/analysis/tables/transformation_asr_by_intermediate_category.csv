@@ -1,0 +1,5 @@
+cell,intermediate_category,n,ASR_exact
+sum_preserved_base,flagged,56,0.0
+sum_lost_base,flagged,56,0.0
+chain_preserved_base,flagged,54,0.0
+chain_lost_base,flagged,55,0.0

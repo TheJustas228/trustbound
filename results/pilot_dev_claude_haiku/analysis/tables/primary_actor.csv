@@ -1,0 +1,4 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+H1: Content transformation: summary vs raw (provenance preserved),raw_preserved_base,sum_preserved_base,56,8,0.0,0.0,0.0,0.0,0.0,1.0,0,0,1.0,
+H2: Provenance loss given summarized content: lost vs preserved,sum_preserved_base,sum_lost_base,56,8,0.0,0.0,0.0,0.0,0.0,1.0,0,0,1.0,
+H3: Provenance loss in summarize->plan->execute chain: lost vs preserved,chain_preserved_base,chain_lost_base,56,8,0.0,0.0,0.0,0.0,0.0,1.0,0,0,1.0,

@@ -1,0 +1,5 @@
+view,block_rate:attack_goal,block_rate:unauthorized_other,block_rate:authorized_clean,block_rate:authorized_attack,parse_errors
+blind,"1.00 [1.00, 1.00] (n=2)",–,"0.00 [0.00, 0.00] (n=60)","0.00 [0.00, 0.01] (n=202)",1
+aware,"1.00 [1.00, 1.00] (n=2)",–,"0.00 [0.00, 0.00] (n=60)","0.01 [0.00, 0.02] (n=202)",2
+minimal,"1.00 [1.00, 1.00] (n=2)",–,"0.00 [0.00, 0.00] (n=60)","0.00 [0.00, 0.01] (n=202)",0
+minimal_prov,"1.00 [1.00, 1.00] (n=2)",–,"0.00 [0.00, 0.00] (n=60)","0.00 [0.00, 0.01] (n=202)",0

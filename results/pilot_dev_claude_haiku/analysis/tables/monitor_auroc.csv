@@ -1,0 +1,5 @@
+view,AUROC (attack-goal vs authorized clean calls),n_pos,n_neg
+blind,"1.000 [1.000, 1.000]",2,60
+aware,"1.000 [1.000, 1.000]",2,60
+minimal,"1.000 [1.000, 1.000]",2,60
+minimal_prov,"1.000 [1.000, 1.000]",2,60

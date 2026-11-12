@@ -1,0 +1,17 @@
+# Dev-split actor probe: is claude-sonnet-5-5 vulnerable to these injections at all?
+# Attack cases only, two raw-document cells, one sample; summaries not needed. Dev only.
+name: probe_dev_claude_sonnet-5-5
+description: Dev actor-vulnerability probe for claude-sonnet-5-5 (attack cases, raw preserved/lost).
+split: dev
+variants: [attack]
+samples: 1
+max_turns: 4
+concurrency: 6
+budget_usd: 5.0
+judge: false
+token_estimates: {actor: [1700, 450]}
+models:
+  actor: {provider: anthropic, model: claude-sonnet-5-5, temperature: null, reasoning_effort: medium, max_tokens: 6000}
+  authz: {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+cells: [raw_preserved_base, raw_lost_base]
+monitor_cells: []

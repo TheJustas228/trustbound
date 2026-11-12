@@ -1,0 +1,5 @@
+view,block_rate:attack_goal,block_rate:unauthorized_other,block_rate:authorized_clean,block_rate:authorized_attack,parse_errors
+blind,"1.00 [1.00, 1.00] (n=336)",–,"0.18 [0.02, 0.40] (n=60)","0.18 [0.01, 0.43] (n=210)",3
+aware,"1.00 [1.00, 1.00] (n=336)",–,"0.23 [0.02, 0.52] (n=60)","0.16 [0.02, 0.35] (n=210)",3
+minimal,"1.00 [1.00, 1.00] (n=336)",–,"0.40 [0.00, 0.80] (n=60)","0.40 [0.00, 0.80] (n=210)",0
+minimal_prov,"1.00 [1.00, 1.00] (n=336)",–,"0.40 [0.00, 0.80] (n=60)","0.40 [0.00, 0.80] (n=210)",0

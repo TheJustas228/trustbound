@@ -182,7 +182,7 @@ def test_runner_end_to_end_with_mock_and_resume(tmp_path):
     assert not any(row["attack_exact"] == "True" for row in rows if row["gate"] == "authz_oracle")
     # Synthetic monitor calls exist for every monitored trial (sample 0) and never feed the gate scores.
     syn = [m for m in r.stores["monitor"].values() if m.get("synthetic")]
-    assert syn and {m["kind"] for m in syn} == {"attack_goal", "authorized"}
+    assert syn and {m["kind"] for m in syn} == {"attack_goal"}
     from trustbound.analysis.report import analyze_run
     summary = analyze_run(r.run_dir, n_boot=200)
     assert (r.run_dir / "analysis" / "tables" / "monitor_synthetic_block_rates.csv").exists()
