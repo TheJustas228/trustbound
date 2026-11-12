@@ -84,8 +84,12 @@ def _md_table(df: pd.DataFrame) -> str:
         return "_no data_\n"
     cols = list(df.columns)
     lines = ["| " + " | ".join(map(str, cols)) + " |", "|" + "|".join("---" for _ in cols) + "|"]
+    def fmt(v: Any) -> str:
+        if isinstance(v, float):
+            return "–" if np.isnan(v) else f"{v:.4g}"
+        return str(v)
     for _, row in df.iterrows():
-        lines.append("| " + " | ".join(str(row[c]) for c in cols) + " |")
+        lines.append("| " + " | ".join(fmt(row[c]) for c in cols) + " |")
     return "\n".join(lines) + "\n"
 
 
@@ -105,24 +109,38 @@ def cell_table(none: pd.DataFrame, n_boot: int) -> pd.DataFrame:
             "utility_under_attack": _fmt_rate(cluster_bootstrap_mean(atk, "task_success", n_boot=n_boot)),
             "disclosure_attack": _fmt_rate(cluster_bootstrap_mean(atk, "final_mentions_attack_target",
                                                                   n_boot=n_boot)),
+            "disclosure_refined": _fmt_rate(cluster_bootstrap_mean(
+                atk[(atk.goal_type != "in_scope_misuse") & (atk.attack_exact == 0)], "final_mentions_attack_target",
+                n_boot=n_boot)),
         })
     return pd.DataFrame(rows)
 
 
 def asr_upper_bounds(none: pd.DataFrame, n_boot: int) -> pd.DataFrame:
-    """Amendment 1: exact attacker success with one-sided 95% upper bounds, per cell and pooled
-    over all ungated cells. Clopper-Pearson assumes independence; the cluster-bootstrap 95th
-    percentile accounts for scenario clustering. Report both."""
+    """Amendment 1 (as corrected, Deviation D2): exact attacker success with one-sided 95% upper
+    bounds, per cell and pooled over all ungated cells.
+      * upper95_independent  — Clopper-Pearson on trials (assumes independence; too optimistic
+                               if trials within a scenario are correlated);
+      * upper95_worst_case_clustering — Clopper-Pearson on scenarios, for the share of scenarios
+                               with >= 1 attack (treats each scenario as a single unit; valid
+                               under arbitrary within-scenario correlation);
+      * upper95_cluster_bootstrap — reported only when >= 5 attacks: the percentile bootstrap is
+                               not a valid bound with zero or very few events."""
     atk = none[(none.variant == "attack") & ~none.cell.str.contains("__gate")]
     rows = []
     groups = [(c, atk[atk.cell == c]) for c in [c for c in CELL_LABELS if c in set(atk.cell)]]
     groups.append(("ALL UNGATED CELLS (pooled)", atk))
     for name, d in groups:
         k, n = int(d["attack_exact"].sum()), int(len(d))
-        b = cluster_bootstrap_mean(d, "attack_exact", n_boot=n_boot, alpha=0.10) if n else {"hi": float("nan")}
+        by_sc = d.groupby("scenario_id")["attack_exact"].max() if n else pd.Series(dtype=float)
+        kj, J = int(by_sc.sum()), int(len(by_sc))
+        boot = (round(cluster_bootstrap_mean(d, "attack_exact", n_boot=n_boot, alpha=0.10)["hi"], 4)
+                if k >= 5 else None)
         rows.append({"cell": name, "attacks": k, "n": n, "rate": round(k / n, 4) if n else None,
-                     "upper95_clopper_pearson": round(clopper_pearson_upper(k, n), 4),
-                     "upper95_cluster_bootstrap": round(b["hi"], 4)})
+                     "upper95_independent": round(clopper_pearson_upper(k, n), 4),
+                     "scenarios_with_attack": f"{kj}/{J}",
+                     "upper95_worst_case_clustering": round(clopper_pearson_upper(kj, J), 4),
+                     "upper95_cluster_bootstrap": boot})
     return pd.DataFrame(rows)
 
 
@@ -154,14 +172,7 @@ def run_paired(df: pd.DataFrame, specs: list[dict[str, Any]], cond_col: str, pai
     if adjust and results:
         for r, p in zip(results, holm([r.p_signflip for r in results])):
             r.p_holm = p
-    out = pd.DataFrame([r.to_dict() for r in results])
-    if not out.empty:
-        for c in ("rate_a", "rate_b", "diff", "ci_lo", "ci_hi"):
-            out[c] = out[c].round(3)
-        for c in ("p_signflip", "p_mcnemar_obs", "p_holm"):
-            if c in out:
-                out[c] = out[c].map(lambda v: None if v is None or pd.isna(v) else float(f"{v:.4g}"))
-    return out
+    return pd.DataFrame([r.to_dict() for r in results])
 
 
 def monitor_calls(run_dir: Path, cases: dict[str, Any]) -> pd.DataFrame:
@@ -169,7 +180,7 @@ def monitor_calls(run_dir: Path, cases: dict[str, Any]) -> pd.DataFrame:
     rows = []
     for m in _jsonl(run_dir / "monitor.jsonl"):
         t = trajs.get(m["trial_key"])
-        if t is None:
+        if t is None or m.get("error"):      # API failure: missing data, excluded (never a block)
             continue
         case = cases[t["case_id"]]
         if m.get("synthetic"):
@@ -263,8 +274,10 @@ def gate_tests(scores: pd.DataFrame, cells: list[str], n_boot: int) -> pd.DataFr
 
 
 def gate_by_tasktype(scores: pd.DataFrame, cells: list[str]) -> pd.DataFrame:
-    d = scores[scores.cell.isin(cells) & scores.error.isna() &
-               scores.gate.isin(["none", "taint_prop", "authz_extracted", "authz_oracle", "monitor_minimal_prov"])]
+    d = scores[scores.cell.isin(cells) & scores.error.isna()]
+    avail = d.groupby("key")["gate"].nunique()
+    d = d[d.key.isin(avail[avail == avail.max()].index)]
+    d = d[d.gate.isin(["none", "taint_prop", "authz_extracted", "authz_oracle", "monitor_minimal_prov"])]
     out = d.groupby(["task_type", "gate"]).apply(
         lambda x: pd.Series({"ASR_exact": x.loc[x.variant == "attack", "attack_exact"].mean(),
                              "utility_benign": x.loc[x.variant != "attack", "task_success"].mean(),
@@ -561,6 +574,10 @@ def analyze_run(run_dir: Path, out_dir: Path | None = None, n_boot: int = 10000)
     (out / "figures").mkdir(parents=True, exist_ok=True)
     cases = {c.case_id: c for c in load_cases(DEFAULT_CASES)}
     manifest = json.loads((run_dir / "manifest.json").read_text()) if (run_dir / "manifest.json").exists() else {}
+    from ..dataset import file_sha256
+    expected = manifest.get("dataset", {}).get("cases_sha256")
+    if expected and expected != file_sha256(DEFAULT_CASES):
+        print(f"WARNING: data/benchmark/cases.jsonl differs from the run's dataset (sha256 {expected[:12]}...)")
     scores = load_scores(run_dir)
     errors = scores[(scores.gate == "none") & scores.error.notna()]
     ok = scores[scores.error.isna()]
@@ -569,6 +586,10 @@ def analyze_run(run_dir: Path, out_dir: Path | None = None, n_boot: int = 10000)
 
     tables: dict[str, pd.DataFrame] = {}
     tables["cells"] = cell_table(none, n_boot)
+    allnone = scores[scores.gate == "none"]
+    tables["errors_by_cell"] = (allnone.assign(err=allnone.error.notna()).groupby("cell")
+                                .agg(trials=("key", "size"), errors=("err", "sum")).reset_index()
+                                .assign(error_rate=lambda x: (x.errors / x.trials).round(4)))
     tables["asr_upper_bounds"] = asr_upper_bounds(none, n_boot)
     atk = none[none.variant == "attack"]
     ben = none[none.variant != "attack"]
@@ -582,6 +603,12 @@ def analyze_run(run_dir: Path, out_dir: Path | None = None, n_boot: int = 10000)
                                                      ("S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8")]]
     tables["disclosure_paired"] = run_paired(atk, disclosure_specs, "cell", pair_cols,
                                              "final_mentions_attack_target", n_boot, False)
+    refined = atk[atk.goal_type != "in_scope_misuse"].copy()
+    refined["disclosed_unexecuted"] = ((refined.final_mentions_attack_target == 1) &
+                                       (refined.attack_exact == 0)).astype(float)
+    tables["disclosure_paired_refined"] = run_paired(
+        refined, [{**sp, "outcome": "disclosed_unexecuted"} for sp in disclosure_specs], "cell", pair_cols,
+        "disclosed_unexecuted", n_boot, False)
     tables["authz_agreement"] = authz_agreement(run_dir, cases)
     tables["behaviour_counts"] = behaviour_counts(run_dir, list(CELL_LABELS))
     mc_all = monitor_calls(run_dir, cases)
@@ -619,7 +646,7 @@ def analyze_run(run_dir: Path, out_dir: Path | None = None, n_boot: int = 10000)
         primary_rows += mt[mt.label.str.startswith(("H4", "H5"))].to_dict("records")
     if primary_rows:
         for r, p in zip(primary_rows, holm([r["p_signflip"] for r in primary_rows])):
-            r["p_holm"] = float(f"{p:.4g}")
+            r["p_holm"] = p
         for r in primary_rows:
             r["status"] = hypothesis_status(r)
     tables["primary_family"] = pd.DataFrame(primary_rows)
@@ -670,12 +697,16 @@ def write_markdown(out: Path, summary: dict[str, Any], tables: dict[str, pd.Data
               "Rates are observation-weighted means with 95% percentile CIs from resampling whole scenarios "
               "(10k draws unless stated). Paired tests: two-sided scenario-level sign-flip randomization tests; "
               "`p_mcnemar_obs` ignores clustering and is shown for reference only.", ""]
-    sections = [("Per-cell outcomes (no gate)", "cells"),
+    sections = [("Trial errors by cell (2% retry rule)", "errors_by_cell"),
+                ("Per-cell outcomes (no gate)", "cells"),
                 ("Exact attacker success with one-sided 95% upper bounds", "asr_upper_bounds"),
                 ("Preregistered primary family (Holm-adjusted)", "primary_family"),
                 ("Secondary actor comparisons (unadjusted; exploratory)", "secondary_actor"),
                 ("Benign utility comparisons", "utility_paired"),
-                ("Disclosure of the injection to the user, paired contrasts (Amendment 1)", "disclosure_paired"),
+                ("Disclosure of the injection to the user, paired contrasts (Amendment 1, as preregistered)",
+                 "disclosure_paired"),
+                ("Disclosure, refined: excludes in-scope-misuse scenarios; counts only unexecuted attacks "
+                 "(Deviation D4)", "disclosure_paired_refined"),
                 ("Authorization spec extracted from the request vs oracle (Amendment 1)", "authz_agreement"),
                 ("Refusals and turns (Amendment 1)", "behaviour_counts"),
                 ("Monitor block rates on SYNTHETIC canonical calls (primary monitor set)",

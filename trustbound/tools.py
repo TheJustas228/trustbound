@@ -125,13 +125,24 @@ def _as_list(value: Any) -> list[Any]:
     return [value]
 
 
+def _target_values(value: Any) -> list[str]:
+    """Split one argument into individual target strings. Every email address in a string is a
+    separate target (e.g. "a@x.example and b@y.example" -> two targets)."""
+    out: list[str] = []
+    for v in _as_list(value):
+        text = str(v)
+        emails = EMAIL_RE.findall(text)
+        out.extend(emails if emails else [text])
+    return out
+
+
 def call_targets(name: str, args: dict[str, Any] | None) -> frozenset[str]:
     """Normalized set of target values for a tool call."""
     if not args:
         return frozenset()
     values: set[str] = set()
     for key in TARGET_ARGS.get(name, ()):
-        for v in _as_list(args.get(key)):
+        for v in _target_values(args.get(key)):
             norm = normalize_target(v)
             if norm:
                 values.add(norm)
