@@ -1,0 +1,19 @@
+# AMENDMENT 2 SCREENING RUN — DEV split only (no test-split data). Actor Claude Haiku 4.5; every other
+# role is Claude Haiku 5.5 with the same settings as the Claude dev pilot, so most summaries are replayed
+# from the response cache. Six core cells, two samples. Go/no-go rule: PREREGISTRATION_AMENDMENT_2.md §A2.3.
+name: screen_dev_claude_haiku45_actor
+description: Amendment 2 screening (dev split), actor Claude Haiku 4.5, six core cells, k = 2.
+split: dev
+samples: 2
+max_turns: 4
+concurrency: 8
+budget_usd: 6.0
+judge: false
+token_estimates: {actor: [1300, 400], summarizer: [700, 450], planner: [700, 500], authz: [600, 300]}
+models:
+  actor:      {provider: anthropic, model: claude-haiku-4-5, temperature: null, reasoning_effort: null, max_tokens: 4000}
+  summarizer: {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  planner:    {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+  authz:      {provider: anthropic, model: claude-haiku-5-5, temperature: null, reasoning_effort: medium, max_tokens: 2000}
+cells: [raw_preserved_base, sum_preserved_base, raw_lost_base, sum_lost_base, chain_preserved_base, chain_lost_base]
+monitor_cells: []

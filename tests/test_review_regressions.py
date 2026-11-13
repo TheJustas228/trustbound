@@ -143,6 +143,16 @@ def test_manifest_git_is_captured_at_start(tmp_path, monkeypatch):
     assert m["git"] == start and m["history"][-1]["git"] == start
 
 
+
+def test_manifest_records_amendment_hashes(tmp_path):
+    import hashlib
+    (tmp_path / "PREREGISTRATION_AMENDMENT_2.md").write_text("amendment text\n")
+    r = Runner(_cfg(tmp_path), root=tmp_path)
+    r.manifest("completed:test")
+    m = json.loads((r.run_dir / "manifest.json").read_text())
+    assert m["preregistration_amendments_sha256"] == {
+        "PREREGISTRATION_AMENDMENT_2.md": hashlib.sha256(b"amendment text\n").hexdigest()}
+
 # ---- D8: verdict recovery for the (non-preregistered) monitor parse sensitivity analysis
 def test_monitor_verdict_recovery_sensitivity_only():
     from trustbound.analysis.report import _recover_verdict

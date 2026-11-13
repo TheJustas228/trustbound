@@ -28,7 +28,7 @@ whether **provenance-aware defenses** stop unauthorized actions without breaking
 | Ground-truth scoring, independent of all defenses | `trustbound/scoring.py` |
 | Orchestration: caching, checkpoint/resume, budget ceiling, manifests, call logs | `trustbound/runner.py` |
 | Statistics: cluster bootstrap, scenario-level sign-flip tests, Holm, GEE, AUROC, power simulation | `trustbound/analysis/` |
-| Preregistration | `PREREGISTRATION.md` |
+| Preregistration and amendments | `PREREGISTRATION.md` (original plan + Amendment 1), `PREREGISTRATION_AMENDMENT_2.md` |
 | Docs: literature review, methodology, threat model & limitations, report | `docs/` |
 | Phase 1 pilot (original code, cases, and results) | `legacy/phase1/` |
 

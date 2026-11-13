@@ -199,6 +199,9 @@ class Runner:
         prereg = self.root / "PREREGISTRATION.md"
         if prereg.exists():
             m["preregistration_sha256"] = file_sha256(prereg)
+        amendments = sorted(self.root.glob("PREREGISTRATION_AMENDMENT_*.md"))
+        if amendments:
+            m["preregistration_amendments_sha256"] = {a.name: file_sha256(a) for a in amendments}
         m.setdefault("history", []).append({"status": status, "at": m["updated_at"], **(extra or {}),
                                             "git": self.git_at_start, "budget": self.budget.snapshot()})
         path.write_text(json.dumps(m, indent=2, ensure_ascii=False), encoding="utf-8")
