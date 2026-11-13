@@ -53,6 +53,11 @@ def export(run_dir: Path, n: int, out: Path, seed: int) -> None:
         keys = sorted(by_cat[cat])
         rng.shuffle(keys)
         chosen += keys[:per]
+    # Top up to n at random when some categories are too small to fill their share (D11).
+    if len(chosen) < n:
+        rest = sorted({k for ks in by_cat.values() for k in ks} - set(chosen))
+        rng.shuffle(rest)
+        chosen += rest[: n - len(chosen)]
     rng.shuffle(chosen)
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", newline="", encoding="utf-8") as fh:
