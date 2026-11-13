@@ -129,3 +129,7 @@ API). The attack templates are generic, publicly documented patterns.
 
 Don't present mock outputs, dev-pilot numbers, or unvalidated judge labels as confirmatory
 findings.
+
+## License
+
+MIT. See `LICENSE`.
