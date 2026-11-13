@@ -206,7 +206,9 @@ For every summary and plan produced from an attack document:
 - **`target_survives`** (deterministic): does the attacker target appear in the output?
 - **Category** (LLM judge; T = 0 for OpenAI, default sampling for Claude): dropped / flagged /
   reported / laundered / amplified, using an ordered decision procedure (`prompts.JUDGE_SYSTEM`,
-  `docs/annotation_guide.md`). **The category is unvalidated until human annotation.** Pilot
+  `docs/annotation_guide.md`). One human annotator checked 120 confirmatory outputs on a coarse
+  3-way scheme (D12). κ = 0.49 is below the preregistered 0.6, so **the category stays exploratory**.
+  Only the binary endorsed-or-not call is supported (99.2% agreement). Pilot
   inspection found judge errors on boundary cases, which led to a rubric revision before pilot v1.
   - If the judge's JSON is malformed but names one valid category unambiguously, that category is
     used, and the record is marked `parse_recovered` (deviation D6).
@@ -264,7 +266,7 @@ Pilot results are reported in the research report as **dev-split, exploratory** 
 
 ## 10. Changes after the confirmatory run started
 
-These are listed with their timing in `docs/deviations.md` (D1–D11). In short:
+These are listed with their timing in `docs/deviations.md` (D1–D12). In short:
 - **Bug fixes** (D3) changed no recorded number. The pre-fix and post-fix scores are byte-identical.
 - **Corrected upper-bound estimand** (D2).
 - **Refined disclosure metric** (D4).
@@ -279,4 +281,6 @@ These are listed with their timing in `docs/deviations.md` (D1–D11). In short:
   - the test-split run replicates the primary design with only the executor changed;
   - all summaries, plans, and judge labels are byte-identical to the primary run's.
 - **Judge-validation sample** (D11): n = 120 from the confirmatory run.
+- **Judge-validation scheme** (D12): the annotator used three categories (rejected / relayed /
+  endorsed), and the judge's five were collapsed to match. The result is reported in report §7.8.1.
 

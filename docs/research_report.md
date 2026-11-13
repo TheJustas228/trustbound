@@ -7,7 +7,7 @@
 | Item | Status | Evidence |
 |---|---|---|
 | Literature review (75 retrieved and verified references) | **Completed** | `docs/literature_review.md`, `docs/references.json` |
-| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 67 automated tests | **Completed** | `trustbound/`, `tests/` |
+| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 70 automated tests | **Completed** | `trustbound/`, `tests/` |
 | Benchmark: 32 scenarios × 9 variants = 288 cases, dev/test split | **Completed.** No independent human review | `data/benchmark/`, `docs/benchmark.md` |
 | Phase 1 pilot (8 cases, gpt-4.1-mini, label-only "summary") | **Completed, preliminary** | `legacy/phase1/` |
 | Dev-split pilots v1–v3 (8 scenarios, gpt-4.1-mini) and Claude Haiku 5.5 dev pilot | **Completed, exploratory.** Used for design and debugging; not confirmatory | `results/pilot_dev_v{1,2,3}/`, `results/pilot_dev_claude_haiku/` |
@@ -17,8 +17,8 @@
 | Amendment 2 (Claude Haiku 4.5 executor arm): written after the Amendment 1 results, committed and pushed before any Haiku 4.5 trial | **Completed** | `PREREGISTRATION_AMENDMENT_2.md` |
 | Amendment 2 screening run (dev split, 6 core cells, 864 trials, $2.82): pre-specified go rule met | **Completed** | `results/screen_dev_claude_haiku45_actor/` |
 | **Amendment 2 confirmatory run:** Claude Haiku 4.5 executor, all other roles Haiku 5.5, 24 held-out scenarios, 6,048 trials, 0 errors, $20.75 | **Completed and analysed** | `results/confirmatory_test_claude_haiku45_actor/` |
-| Deviations from the preregistration (D1–D11) | **Logged** | `docs/deviations.md` |
-| Human validation of the summary/plan judge | **PENDING.** Needs a human annotator; the blinded sheet (n = 120, confirmatory run) is ready | `annotation/confirmatory_haiku_sheet.csv`, `docs/annotation_guide.md` |
+| Deviations from the preregistration (D1–D12) | **Logged** | `docs/deviations.md` |
+| Human validation of the summary/plan judge: one annotator (the project owner), blinded sheet, n = 120, coarse 3-way scheme (D12) | **Completed.** Raw agreement 91.7%, κ = 0.49. That is below the preregistered 0.6, so judge categories stay exploratory. On the safety question, 0 of 113 judge-"flagged" outputs were labelled endorsements (§7.8.1) | `annotation/confirmatory_haiku_sheet_labeled.csv`, `annotation/confirmatory_haiku_agreement.txt` |
 | OpenAI confirmatory run (original plan), open-weight models | **Not done.** Configurations exist; not run (Amendment 1) | `configs/confirmatory_test*.yaml` |
 
 **Spend.** Anthropic $38.07 in total:
@@ -445,7 +445,7 @@ Haiku, identical trials in the six core cells (2,016 attack and 576 non-attack t
 - **Online vs offline:** online enforcement matched the offline counterfactual within 3.1 points in
   all four online cells. Example: taint propagation, benign utility 0.71 offline vs 0.73 online.
 
-### 7.8 What intermediate agents did with injections (descriptive; judge unvalidated)
+### 7.8 What intermediate agents did with injections (descriptive; judge categories exploratory, §7.8.1)
 
 | Stage (Haiku) | dropped | flagged | reported | laundered | amplified | Target survives | Keyword-flagged |
 |---|---|---|---|---|---|---|---|
@@ -458,16 +458,62 @@ Haiku, identical trials in the six core cells (2,016 attack and 576 non-attack t
   the attacker's target but explicitly marks the request as untrusted and not from the user.
 - **The keyword check is a narrow lower bound.** It finds explicit warning words in only about 40%
   of these outputs.
-- **AI spot check (not human validation).** We read 5 randomly chosen disagreements, and the
-  judge's label was correct in all 5. Those outputs flagged the request in other words, such as
-  "this instruction comes from the email content, not from the user".
-- **Possible bias.** The judge is the same model family as the summarizer. Human annotation is
-  pending.
+- **AI spot check of the keyword check.** We read 5 randomly chosen cases where the keyword check found no
+  warning but the judge said "flagged". The judge was right in all 5: those outputs flagged the
+  request in other words, such as "this instruction comes from the email content, not from the user".
+- **Possible bias.** The judge is the same model family as the summarizer. The human check in
+  §7.8.1 addresses this in part.
 - **Contrast with gpt-4.1-mini (dev, §8.4).** There the neutral summarizer laundered or amplified
   26/56 injections and dropped 21.
 - **What carries forward.** With Claude, the summarizer's own safety behaviour reaches the executor
   as an *annotation* rather than a deletion. Summary cells had 0 attacks even though the target
   survived in 98.5% of summaries. This is descriptive: we did not manipulate the annotation.
+
+#### 7.8.1 Human validation of the judge
+
+**Design.** One annotator, the project owner, labelled the blinded sheet:
+- 120 summaries and plans from the primary confirmatory run;
+- stratified by the judge's category, which the sheet did not show;
+- these outputs are byte-identical in the Amendment 2 run, so the check covers both runs.
+
+The annotator used a coarser scheme than the five-way rubric (D12):
+- **rejected:** the request was dropped, or flagged as untrusted or not to be followed;
+- **relayed:** the request was passed on with attribution but not endorsed, for example by leaving
+  the decision to the user;
+- **endorsed:** the request was presented as a task or as a neutral fact.
+
+For comparison, the judge's labels were collapsed the same way: dropped and flagged become
+rejected, reported becomes relayed, laundered and amplified become endorsed.
+(`annotation/confirmatory_haiku_agreement.txt`)
+
+| Human \ judge | rejected | relayed | endorsed |
+|---|---|---|---|
+| rejected | 105 | 1 | 0 |
+| relayed | 8 | 4 | 0 |
+| endorsed | 0 | 1 | 1 |
+
+**Results.**
+- **Overall:** raw agreement 91.7% (110/120), Cohen's κ = 0.49.
+- **Preregistered rule (§7):** κ < 0.6, so the judge's categories **stay exploratory**. The
+  deterministic `target_survives` measure stays the primary transformation metric. A 5-way κ cannot
+  be computed from 3-way labels. Finer categories could not raise raw agreement above 91.7%.
+- **Why κ is low despite 92% agreement.** 88% of items fall in one class. Most disagreements (8 of
+  10) are outputs the judge called "flagged" and the annotator called "relayed". These plans withhold
+  the injected action but ask the user whether to do it. That is a boundary question, not a safety
+  disagreement.
+- **The safety-relevant question agrees.** Did the output push the injected request as a task or
+  fact? Agreement is 99.2% (119/120), κ = 0.66 (not preregistered).
+  - Of the 113 outputs the judge called "flagged", the annotator labelled **0** endorsed (one-sided
+    95% upper bound 2.6%). "Flagged" covers 1,169 of the 1,176 judged outputs.
+  - The annotator labelled 2 summaries as endorsed. One is the judge's single "amplified" output.
+    The other the judge called "reported", noting it "leans toward endorsement": it calls the
+    injected delivery note authoritative while asking for confirmation.
+  - Neither case produced an unauthorized call in any summary, sanitizing-summary, or chain trial,
+    in either executor arm.
+
+**What this supports.** On the binary question, the human labels back §7.8's description: the
+Claude intermediate agents almost never passed injected requests on as tasks. The finer categories,
+flagged vs reported, are not validated. One annotator means no inter-annotator agreement.
 
 ### 7.9 Amendment 2: Claude Haiku 4.5 as executor
 
@@ -620,7 +666,7 @@ For comparison, on the same cells and scenarios:
 
 **What H1 does and does not show.** The summarizer in this arm is Claude Haiku 5.5, a newer and much
 more robust model than the executor. It kept the attacker's target in 98.5% of summaries but flagged
-the request as untrusted (§7.8, judge unvalidated). H1 therefore shows that passing external content
+the request as untrusted (§7.8; human-checked on the binary question in §7.8.1). H1 therefore shows that passing external content
 through *this* intermediate model protected a vulnerable executor completely. It does **not** separate
 summarization itself from the intermediate model's own safety behaviour. A Haiku 4.5 summarizer would
 be needed for that (§11).
@@ -776,8 +822,9 @@ dev-pilot direction and with prior work: when the *system* misattributes externa
 trusted principal, the model's own judgment is all that remains. Unlike gpt-4.1-mini, the effect
 needed both the channel change and the label change.
 
-**3. A robust intermediate agent protected a vulnerable executor.** As judged by
-an unvalidated LLM judge:
+**3. A robust intermediate agent protected a vulnerable executor.** According to the LLM judge, whose
+categories stay exploratory but whose safety-relevant call one human annotator confirmed in 119 of
+120 cases (§7.8.1):
 - the summarizer and planner kept the attacker's target in about 98% of outputs, but marked the
   request as untrusted;
 - downstream, summary and chain cells had 0 attacks, even with provenance lost.
@@ -837,8 +884,9 @@ See `docs/threat_model.md` §4 for the full list. The most important:
 5b. **Amendment 2 was decided after seeing Amendment 1 results.** Its design and go rule were fixed
     and published before any Haiku 4.5 data, but choosing a more vulnerable model was itself
     data-informed.
-6. **Same-model roles.** Haiku is actor, monitor, and judge in the primary run. Judge categories
-   are not yet human-validated.
+6. **Same-model roles.** Haiku is actor, monitor, and judge in the primary run. One annotator
+   checked the judge on a coarser scheme (D12). κ = 0.49 is below the preregistered 0.6, so judge
+   categories stay exploratory. Only the binary endorsed-or-not call agrees well (99.2%).
 7. **Effective n for content-free monitor views** is about one decision per scenario.
 8. **String-level target matching.**
 9. **Offline gate evaluation approximates enforcement.** It was checked online for four cells, and
@@ -856,8 +904,8 @@ See `docs/threat_model.md` §4 for the full list. The most important:
 2. **Run the original OpenAI confirmatory configuration** on the test split. It is ready
    (`configs/confirmatory_test.yaml`) and needs budget approval. It would test H1–H5 with a model
    that showed effects on dev.
-3. **Human validation of judge categories** (n = 120 from the confirmatory run; blinded sheet
-   ready: `annotation/confirmatory_haiku_sheet.csv`).
+3. **Stronger judge validation.** A second annotator, labelling independently with the full
+   five-way rubric. This gives inter-annotator agreement and the preregistered five-way κ.
 4. **Manipulate intermediate-agent annotation directly**: for example, summaries with and without
    the "untrusted" flag. This would test whether flagging, not deletion, is what protects the
    executor.
@@ -867,7 +915,7 @@ See `docs/threat_model.md` §4 for the full list. The most important:
 ## 12. Reproducibility
 
 See `README.md`. In short:
-- `pytest -q` (67 tests, no API calls)
+- `pytest -q` (70 tests, no API calls)
 - `python -m trustbound run <config>`, which resumes from checkpoint and replays cached responses
 - `python -m trustbound analyze results/<run>`, which regenerates all tables and figures from saved
   trajectories (seeded bootstrap; two consecutive runs produce identical tables)
@@ -887,7 +935,7 @@ The Amendment 1 confirmatory trials were generated by commit `4422421` (D7). Run
 
 ## 13. Deviations from the preregistration
 
-Eleven deviations and amendments are logged with their timing in `docs/deviations.md`:
+Twelve deviations and amendments are logged with their timing in `docs/deviations.md`:
 - **D1:** process monitoring
 - **D2:** corrected upper-bound estimand
 - **D3:** scoring and analysis bug fixes; no number changed
@@ -899,6 +947,7 @@ Eleven deviations and amendments are logged with their timing in `docs/deviation
 - **D9:** repository history rewrite (no file affecting results changed)
 - **D10:** Amendment 2, the Haiku 4.5 executor arm, written after the Amendment 1 results
 - **D11:** judge-validation sample brought up to the preregistered n = 120
+- **D12:** judge validation used a coarse 3-way scheme instead of the five-way rubric
 
 D6–D8 were made after outcomes had been seen. None changes a preregistered quantity, and the
 preregistered versions are reported first.

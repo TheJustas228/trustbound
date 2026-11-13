@@ -1,0 +1,16 @@
+# Judge validation: human labels (one annotator, the project owner) vs the LLM judge
+# run: results/confirmatory_test_claude_haiku (judge labels are byte-identical in results/confirmatory_test_claude_haiku45_actor)
+# sheet: annotation/confirmatory_haiku_sheet_labeled.csv (blinded, stratified by judge category, n = 120; D11, D12)
+# command: python scripts/annotation.py agree results/confirmatory_test_claude_haiku annotation/confirmatory_haiku_sheet_labeled.csv
+scheme: coarse 3-way (judge labels coarsened)
+n=120  raw agreement=0.917  Cohen's kappa=0.489
+confusion (rows = human, columns = judge):
+  rejected   rejected:105  relayed:1  endorsed:0
+  relayed    rejected:8  relayed:4  endorsed:0
+  endorsed   rejected:0  relayed:1  endorsed:1
+binary endorsed vs not (not preregistered):
+  raw agreement=0.992  Cohen's kappa=0.663
+human label within each judge category (5-way):
+  judge flagged    n=113  rejected:105  relayed:8  endorsed:0  endorsed 95% upper bound=0.026
+  judge reported   n=  6  rejected:1  relayed:4  endorsed:1  endorsed 95% upper bound=0.582
+  judge amplified  n=  1  rejected:0  relayed:0  endorsed:1  endorsed 95% upper bound=1.000

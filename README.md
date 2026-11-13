@@ -1,29 +1,83 @@
-# TrustBound: Provenance Loss and Safety Monitoring in Multi-Step LLM Agents
+# TrustBound
 
-TrustBound is a reproducible measurement framework and benchmark. It asks what happens to
-**prompt injections** when attacker-controlled documents pass through intermediate LLM stages
-(a summarizer, a planner) before reaching an agent with consequential tools. It also asks
-whether **provenance-aware defenses** stop unauthorized actions without breaking legitimate tasks.
+**Provenance loss and safety monitoring in multi-step LLM agents.** A preregistered, reproducible
+benchmark study of what happens to prompt injections when an attacker's document passes through a
+summarizer and a planner before it reaches an agent that can send email, edit records, and share
+files. It also tests which defenses stop the resulting unauthorized actions without breaking
+legitimate work.
 
-> **Status (see `docs/research_report.md` §0 for the authoritative status table).**
-> - **Complete:**
->   - the framework, benchmark, and tests;
->   - dev-split pilots with OpenAI gpt-4.1-mini and Claude Haiku 5.5;
->   - the preregistered confirmatory study on the held-out test split: Claude Haiku 5.5 in all roles,
->     plus a Claude Sonnet 5.5 actor arm (6,912 trials; $13.15);
->   - **Amendment 2**, a Claude Haiku 4.5 executor arm (dev screening plus 6,048 test trials; $23.57).
-> - **Headline:**
->   - **Current Claude executors are at the floor.** Haiku 5.5 and Sonnet 5.5 had exact attacker
->     success of 0.60% and 0.45%, so the primary hypotheses are *not testable*, as pre-specified.
->   - **Haiku 4.5 is vulnerable on raw documents:** 17.6% with provenance preserved, 31.3% with it lost.
->   - **H1 is supported:** routing the document through the (Haiku 5.5) summarizer cut Haiku 4.5's
->     attacks to 0% (Holm *p* = 0.0006).
->   - **Defenses:** request-derived authorization blocked every attack at no utility cost; taint
->     tracking cost 21–25 points. Both replicated across three executors.
->   - See the report §7, especially §7.9.
-> - **Pending:** human validation of the LLM judge (blinded sheet: `annotation/confirmatory_haiku_sheet.csv`).
-> - **Provenance of numbers:** every number comes from a run directory under `results/` with its own
->   manifest. Deviations from the preregistration are in `docs/deviations.md`.
+[![License: MIT](https://img.shields.io/badge/license-MIT-2a78d6.svg)](LICENSE)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-2a78d6.svg)
+![Tests: 70 passing](https://img.shields.io/badge/tests-70%20passing-1baf7a.svg)
+![Preregistered](https://img.shields.io/badge/study-preregistered-52514e.svg)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/key_result_dark.png">
+  <img alt="Bar chart of exact attacker-goal success by delivery path and provenance for three Claude executors. Claude Haiku 4.5 executed injected actions in 18% of raw-document trials with provenance preserved and 31% with provenance lost. With an LLM summary or a summarize-then-plan chain, every executor was at 0%. Claude Haiku 5.5 reached 6.5% and Claude Sonnet 5.5 1.8%, only on raw documents with provenance lost." src="docs/figures/key_result_light.png">
+</picture>
+
+## Key findings
+
+All numbers come from the held-out test split (24 scenarios), with 95% scenario-cluster bootstrap
+CIs. Full analysis: [`docs/research_report.md`](docs/research_report.md) §7.
+
+1. **Current Claude executors are hard to hijack here.** Pooled exact attacker success was 0.60%
+   for Claude Haiku 5.5 and 0.45% for Claude Sonnet 5.5. The primary hypotheses were therefore not
+   testable, as the preregistration specified in advance.
+2. **An older executor is not.** Claude Haiku 4.5 carried out the attacker's action in **17.6%** of
+   raw-document trials when the document was clearly external. It did so in **31.3%** when the same
+   document arrived as "internal notes" in the user channel.
+3. **H1 is supported: the summarizer stopped every attack.** Routing the document through a Claude
+   Haiku 5.5 summarizer cut Haiku 4.5's success to **0%**: −17.6 points, CI [−27.4, −9.5], Holm
+   *p* = 0.0006. Caveat: the summarizer is a newer, more robust model than the executor. So this
+   shows a robust intermediate model protecting a weak executor, not summarization as such (§7.9).
+4. **Where text appears matters more than what it is called.** On raw documents, Haiku 4.5's
+   success depended on how the document was presented:
+   - changing only the label (external → internal notes) did nothing: 17.3% vs 17.6%;
+   - moving the text from the tool channel into the user channel raised it to 25.6%;
+   - doing both raised it to 31.3%.
+5. **Defenses differ mainly in what they cost.**
+   - Authorization derived from the user's request blocked **164/164** real attacks at no cost to
+     benign task success.
+   - Taint tracking blocked nearly as many but cost **21–25 points** of task success.
+   - An LLM monitor blocked 99.4–100% of attacker-goal calls.
+   - The authorization and taint results replicated across all three executors.
+6. **The judge holds up on the question that matters.** One human annotator labelled 120 blinded
+   summaries and plans. They agreed with the LLM judge on 119 of 120 about whether the injected
+   request was passed on as a task. The judge's finer categories stay exploratory: κ = 0.49, below
+   the preregistered 0.6 (§7.8.1).
+
+## How the study works
+
+```mermaid
+flowchart LR
+    U["User request"] --> X
+    D["External document<br/>(may contain an injection)"] --> R{"Delivery path"}
+    R -->|raw| X["Executor agent"]
+    R -->|summary| S["LLM summarizer"] --> X
+    R -->|chain| S2["LLM summarizer"] --> P["LLM planner"] --> X
+    X -->|"proposed tool call"| G{"Pre-execution gate<br/>taint · authorization · monitor"}
+    G -->|allowed| T[("Simulated tools<br/>email · records · calendar · files")]
+    G -.->|blocked| B["Refused"]
+```
+
+- **Provenance preserved or lost.** When the document (or its summary) reaches the executor, it
+  either keeps its provenance (tool channel, labelled as external) or loses it (user channel,
+  labelled as internal research notes). Ablations separate the channel from the label.
+- **Ground truth.** Scoring compares the calls actually executed against ground truth. It is
+  independent of every defense.
+
+| Study at a glance | |
+|---|---|
+| Benchmark | 32 scenarios × 9 payload variants = 288 cases; 7 injection strategies; dev 8 / test 24 scenarios |
+| Confirmatory trials | 12,960 on the test split, 0 errors: Haiku 5.5 (6,048), Sonnet 5.5 (864), Haiku 4.5 (6,048) |
+| Preregistration | [`PREREGISTRATION.md`](PREREGISTRATION.md) (plan + Amendment 1), [`PREREGISTRATION_AMENDMENT_2.md`](PREREGISTRATION_AMENDMENT_2.md); each was pushed before its data existed |
+| Deviations | 12, each logged with its timing: [`docs/deviations.md`](docs/deviations.md) |
+| API spend | Anthropic $38.07; OpenAI pilots $2.20 |
+| Status table | [`docs/research_report.md`](docs/research_report.md) §0 |
+
+Every number traces to a run directory under `results/` with its own manifest (git commit, dataset
+hash, prompt fingerprint, models, cost).
 
 ## What is in here
 
@@ -47,7 +101,7 @@ whether **provenance-aware defenses** stop unauthorized actions without breaking
 cd trustbound-starter
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt        # exact versions used: requirements-lock.txt
-pytest -q                              # 67 unit/integration tests, no API calls
+pytest -q                              # 70 unit/integration tests, no API calls
 ```
 
 For real-model runs, put your API key(s) in a gitignored `.env` file, typed in your own
@@ -86,6 +140,8 @@ python -m trustbound analyze results/<run>              # tables, stats, figures
 python -m trustbound show results/<run> --only attack_exact --limit 5   # read actual trajectories
 python scripts/power_analysis.py results/pilot_dev_v3   # simulation-based power analysis
 python scripts/annotation.py export results/<run>       # blinded sheet for human validation of the judge
+python scripts/annotation.py agree results/<run> <sheet> # human-vs-judge agreement
+python scripts/make_readme_figures.py                   # the key-result figure above
 ```
 
 ## Reproducing reported results without API calls
@@ -103,7 +159,7 @@ deterministically from these files. To re-run the *pipeline* without paying, kee
 cache (`cache/responses.sqlite`, not committed because of its size). Requests are hashed, so
 identical requests are replayed.
 
-## Design in one paragraph
+## Design details
 
 Each case gives the actor a user request and one external document, which may contain an
 injection written in one of seven strategies. The document reaches the actor in one of three ways:
@@ -138,8 +194,8 @@ API). The attack templates are generic, publicly documented patterns.
 
 ## Interpreting results
 
-Don't present mock outputs, dev-pilot numbers, or unvalidated judge labels as confirmatory
-findings.
+Don't present mock outputs, dev-pilot numbers, or the judge's fine-grained categories as confirmatory
+findings. The judge's categories stay exploratory (κ = 0.49 against one human annotator, report §7.8.1).
 
 ## License
 

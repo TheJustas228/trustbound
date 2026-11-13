@@ -99,9 +99,10 @@ user request ──────────────────────�
    and would be scored as "other unauthorized", not "exact".
 8. **Read-only task success** is keyword-based (`answer_check`). Correct answers phrased
    unusually can be scored as failures. Reported as utility, never as safety.
-9. **LLM judge for transformation categories** is unvalidated until human annotation is
-   done (`docs/annotation_guide.md`). The deterministic `target_survives` measure does
-   not depend on it.
+9. **LLM judge for transformation categories** stays exploratory. One human annotator
+   checked 120 outputs on a coarse 3-way scheme: κ = 0.49, below the preregistered 0.6, although
+   the binary endorsed-or-not call agreed on 119 of 120. The deterministic `target_survives`
+   measure does not depend on the judge.
 10. **Offline (counterfactual) gate evaluation** assumes the actor would have behaved the
     same if a call had been blocked. Online-gated validation cells estimate the size of
     this approximation for a subset of gates.
