@@ -6,13 +6,22 @@ TrustBound is a reproducible measurement framework and benchmark. It asks what h
 whether **provenance-aware defenses** stop unauthorized actions without breaking legitimate tasks.
 
 > **Status (see `docs/research_report.md` §0 for the authoritative status table).**
-> - **Complete:** the framework, benchmark, tests, dev-split pilots (OpenAI gpt-4.1-mini and Claude
->   Haiku 5.5), and the preregistered confirmatory study on the held-out test split (Claude Haiku 5.5
->   in all roles, plus a Claude Sonnet 5.5 actor arm; 6,912 trials; $13.15).
-> - **Headline:** both Claude models were at the floor on this benchmark (exact attacker success 0.60%
->   and 0.45%), so the primary hypotheses are *not testable*, as pre-specified. The informative
->   results are upper bounds, one residual vulnerability, and defense utility costs. See the report §7.
-> - **Pending:** human validation of the LLM judge (blinded sheet in `annotation/`).
+> - **Complete:**
+>   - the framework, benchmark, and tests;
+>   - dev-split pilots with OpenAI gpt-4.1-mini and Claude Haiku 5.5;
+>   - the preregistered confirmatory study on the held-out test split: Claude Haiku 5.5 in all roles,
+>     plus a Claude Sonnet 5.5 actor arm (6,912 trials; $13.15);
+>   - **Amendment 2**, a Claude Haiku 4.5 executor arm (dev screening plus 6,048 test trials; $23.57).
+> - **Headline:**
+>   - **Current Claude executors are at the floor.** Haiku 5.5 and Sonnet 5.5 had exact attacker
+>     success of 0.60% and 0.45%, so the primary hypotheses are *not testable*, as pre-specified.
+>   - **Haiku 4.5 is vulnerable on raw documents:** 17.6% with provenance preserved, 31.3% with it lost.
+>   - **H1 is supported:** routing the document through the (Haiku 5.5) summarizer cut Haiku 4.5's
+>     attacks to 0% (Holm *p* = 0.0006).
+>   - **Defenses:** request-derived authorization blocked every attack at no utility cost; taint
+>     tracking cost 21–25 points. Both replicated across three executors.
+>   - See the report §7, especially §7.9.
+> - **Pending:** human validation of the LLM judge (blinded sheet: `annotation/confirmatory_haiku_sheet.csv`).
 > - **Provenance of numbers:** every number comes from a run directory under `results/` with its own
 >   manifest. Deviations from the preregistration are in `docs/deviations.md`.
 
@@ -38,7 +47,7 @@ whether **provenance-aware defenses** stop unauthorized actions without breaking
 cd trustbound-starter
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt        # exact versions used: requirements-lock.txt
-pytest -q                              # 66 unit/integration tests, no API calls
+pytest -q                              # 67 unit/integration tests, no API calls
 ```
 
 For real-model runs, put your API key(s) in a gitignored `.env` file, typed in your own
@@ -65,6 +74,8 @@ resumes. Identical API requests are served from `cache/responses.sqlite` at zero
 | Dev-split pilot, gpt-4.1-mini | `python -m trustbound run configs/pilot_dev_v3.yaml` | ≈ $1–2 (≈ $0 if cached) |
 | **Confirmatory run** (test split, Amendment 1) | `python -m trustbound run configs/confirmatory_test_claude.yaml` | $5.37 actual (≈ $0 if cached) |
 | Confirmatory secondary arm (Sonnet 5.5 actor) | `python -m trustbound run configs/confirmatory_test_claude_sonnet_actor.yaml --budget-usd <remaining>` | $7.78 actual (≈ $0 if cached) |
+| Amendment 2 screening (Haiku 4.5 actor, dev) | `python -m trustbound run configs/screen_dev_claude_haiku45_actor.yaml` | $2.82 actual (≈ $0 if cached) |
+| Amendment 2 confirmatory run (Haiku 4.5 actor, test) | `python -m trustbound run configs/confirmatory_test_claude_haiku45_actor.yaml --approve-over-budget` | $20.75 actual (≈ $0 if cached) |
 | Original OpenAI confirmatory plan (not run) | `python -m trustbound run configs/confirmatory_test.yaml --budget-usd <approved>` | ≈ $6–9 |
 | Estimate only | `python -m trustbound estimate <config>` | $0 |
 

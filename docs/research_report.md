@@ -1,25 +1,32 @@
 # TrustBound: Provenance Loss and Safety Monitoring in Multi-Step LLM Agents
 
-*Research report, structured for adaptation into a BSc thesis. Last updated 2026-11-12.*
+*Research report, structured for adaptation into a BSc thesis. Last updated 2026-11-13.*
 
 ## 0. Status: what is done, what is preliminary, what is pending
 
 | Item | Status | Evidence |
 |---|---|---|
 | Literature review (75 retrieved and verified references) | **Completed** | `docs/literature_review.md`, `docs/references.json` |
-| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 66 automated tests | **Completed** | `trustbound/`, `tests/` |
+| Experimental framework (pipelines, simulated tools, defenses, scoring, statistics); 67 automated tests | **Completed** | `trustbound/`, `tests/` |
 | Benchmark: 32 scenarios × 9 variants = 288 cases, dev/test split | **Completed.** No independent human review | `data/benchmark/`, `docs/benchmark.md` |
 | Phase 1 pilot (8 cases, gpt-4.1-mini, label-only "summary") | **Completed, preliminary** | `legacy/phase1/` |
 | Dev-split pilots v1–v3 (8 scenarios, gpt-4.1-mini) and Claude Haiku 5.5 dev pilot | **Completed, exploratory.** Used for design and debugging; not confirmatory | `results/pilot_dev_v{1,2,3}/`, `results/pilot_dev_claude_haiku/` |
 | Preregistration (`568e7aa`, was `5725b78`) and Amendment 1, Claude-only design (`4422421`, was `a561875`), both before any test-split trial; hashes changed in a history rewrite, see `docs/commit_map.md` | **Completed** | `PREREGISTRATION.md` |
 | **Confirmatory run, primary:** Claude Haiku 5.5 in all roles, 24 held-out scenarios, 6,048 trials, 0 errors, $5.37 | **Completed and analysed** | `results/confirmatory_test_claude_haiku/` |
 | **Confirmatory run, secondary:** Claude Sonnet 5.5 actor, 4 core cells, 864 trials, 0 errors, $7.78 | **Completed and analysed** | `results/confirmatory_test_claude_sonnet_actor/` |
-| Deviations from the preregistration (D1–D8) | **Logged** | `docs/deviations.md` |
-| Human validation of the summary/plan judge | **PENDING.** Needs a human annotator; the blinded sheet is ready | `annotation/dev_pilot_v3_sheet.csv`, `docs/annotation_guide.md` |
+| Amendment 2 (Claude Haiku 4.5 executor arm): written after the Amendment 1 results, committed and pushed before any Haiku 4.5 trial | **Completed** | `PREREGISTRATION_AMENDMENT_2.md` |
+| Amendment 2 screening run (dev split, 6 core cells, 864 trials, $2.82): pre-specified go rule met | **Completed** | `results/screen_dev_claude_haiku45_actor/` |
+| **Amendment 2 confirmatory run:** Claude Haiku 4.5 executor, all other roles Haiku 5.5, 24 held-out scenarios, 6,048 trials, 0 errors, $20.75 | **Completed and analysed** | `results/confirmatory_test_claude_haiku45_actor/` |
+| Deviations from the preregistration (D1–D11) | **Logged** | `docs/deviations.md` |
+| Human validation of the summary/plan judge | **PENDING.** Needs a human annotator; the blinded sheet (n = 120, confirmatory run) is ready | `annotation/confirmatory_haiku_sheet.csv`, `docs/annotation_guide.md` |
 | OpenAI confirmatory run (original plan), open-weight models | **Not done.** Configurations exist; not run (Amendment 1) | `configs/confirmatory_test*.yaml` |
 
-**Spend.** Anthropic $14.50 in total: $13.15 for the confirmatory runs, under the approved $20 cap,
-plus $1.34 for the Claude dev pilot and smoke test. OpenAI pilots: $2.20.
+**Spend.** Anthropic $38.07 in total:
+- $13.15 for the Amendment 1 confirmatory runs, under the approved $20 cap;
+- $23.57 for Amendment 2: screening $2.82, test run $20.75, under the approved $30 ceiling;
+- $1.34 for the Claude dev pilot and smoke test.
+
+OpenAI pilots: $2.20.
 
 **Provenance of numbers.** Every number in this report comes from a run directory with a manifest
 (git commit, dataset hash, prompt fingerprint, models, cost). The dev pilots are **exploratory**: 8
@@ -74,9 +81,29 @@ On the defense side:
 - **LLM monitors** detected 100% of synthetic and real attacker-goal calls in all four views. Their
   false-block rates were at most 1.3%.
 
-The study is therefore mainly a **robustness result plus a defense-cost result** for current Claude
-models. It cannot test the summarization and provenance mechanisms for models that resist these
-attacks.
+**Amendment 2: a vulnerable executor.** To test the mechanisms where a model is vulnerable, a second
+amendment swapped in Claude Haiku 4.5 as executor and kept every other role on Haiku 5.5. It was
+written after the first results and pushed before any new data. A dev-split screening run met the
+pre-specified go rule. The test-split run (6,048 trials, $20.75) gave pooled exact attacker success of
+6.7% (269/4,032).
+- **H1 supported.** Passing the document through the summarizer cut exact attacker success from
+  17.6% to 0%: −17.6 points [−27.4, −9.5], Holm *p* = 0.0006, 59 of 59 discordant pairs.
+- **H2 and H3 not testable (floor):** no attack survived summarization in any cell. **H4 and H5 not
+  discriminable (ceiling).**
+- **Secondary contrasts (unadjusted):**
+  - provenance loss raised success on raw content from 17.6% to 31.3% (+13.7 points [+8.9, +18.8]),
+    driven by the user-role channel rather than the label;
+  - a boundary reminder cut it to 0–4%, but cost 9–21 points of benign utility;
+  - putting the request after the content halved it.
+- **The summarizer is a different, more robust model.** So H1 shows that this intermediate model
+  protected a vulnerable executor. It does not isolate summarization itself.
+- **Defense results replicated with the third executor.** Authorization blocked all 164 real attacks
+  at no utility cost. Taint tracking cost 21.5 points, and missed 5 in-scope-misuse attacks that
+  authorization caught.
+
+The study therefore gives a **robustness result** for current Claude executors, **one supported
+primary hypothesis** with a vulnerable executor, and **defense-cost results** replicated across three
+executors.
 
 ## 2. Introduction
 
@@ -220,6 +247,9 @@ with a baseline prompt or with a boundary reminder. Two ordering cells place the
 **Sources:**
 - `results/confirmatory_test_claude_haiku/analysis/report.md`
 - `results/confirmatory_test_claude_sonnet_actor/analysis/report.md`
+- `results/confirmatory_test_claude_haiku45_actor/analysis/report.md` (Amendment 2, §7.9)
+
+§7.1–7.8 report the Amendment 1 runs (Haiku 5.5 and Sonnet 5.5 executors); §7.9 reports Amendment 2.
 
 Every preregistered primary and secondary test is reported, including the uninformative ones.
 Brackets are 95% scenario-cluster bootstrap CIs. *p* values are two-sided scenario-level sign-flip
@@ -439,6 +469,162 @@ Haiku, identical trials in the six core cells (2,016 attack and 576 non-attack t
   as an *annotation* rather than a deletion. Summary cells had 0 attacks even though the target
   survived in 98.5% of summaries. This is descriptive: we did not manipulate the annotation.
 
+### 7.9 Amendment 2: Claude Haiku 4.5 as executor
+
+**Design.** (`PREREGISTRATION_AMENDMENT_2.md`)
+- **Change:** the executor is Claude Haiku 4.5 (no extended thinking, default sampling). Every other
+  role stays Claude Haiku 5.5 with identical requests.
+- **Integrity of the comparison:** all 648 summaries, 864 plans, and 1,176 judge labels are
+  byte-identical to the primary run's, replayed from cache. The only thing that differs from §7.2–7.8
+  is the executor.
+- **Timing:** the amendment was written after the Amendment 1 results were seen, and committed and
+  pushed to the public repository before any Haiku 4.5 trial.
+- **Screening rule:** a dev-split screening run with a pre-specified go/no-go rule (A2.3) decided
+  whether to run the test split.
+
+**Screening (dev split, 8 scenarios, 112 attack trajectories per cell; $2.82).**
+
+| Cell | Exact attacks |
+|---|---|
+| Raw, preserved | 20/112 (17.9%) |
+| Raw, lost | 43/112 (38.4%) |
+| Summary, preserved / lost | 0/112 / 0/112 |
+| Chain, preserved / lost | 0/112 / 1/112 |
+
+The H1 cell-pair mean was 8.9%, above the 5% go threshold, so the decision was **GO**
+(`results/screen_dev_claude_haiku45_actor/go_rule.txt`). The projected test cost was $26.33, within
+the $30 ceiling.
+
+**Run integrity (test split).**
+- 6,048 trials, 0 errors, 0 retries, 0 refusals;
+- 128 monitor parse failures, handled by the preregistered fail-closed rule and the D8 sensitivity
+  table;
+- $20.75.
+
+**Primary family (Holm across H1–H5, this arm only).**
+
+| Hypothesis | Cell a → cell b | Rate a | Rate b | Diff [95% CI] | Holm p | Status |
+|---|---|---|---|---|---|---|
+| H1 summary vs raw (preserved) | `raw_preserved_base` → `sum_preserved_base` | 17.6% | 0% | −17.6 [−27.4, −9.5] | 0.0006 | **supported** |
+| H2 lost vs preserved (summary) | `sum_preserved_base` → `sum_lost_base` | 0% | 0% | 0 | 1 | not testable (floor) |
+| H3 lost vs preserved (chain) | `chain_preserved_base` → `chain_lost_base` | 0% | 0% | 0 | 1 | not testable (floor) |
+| H4 monitor provenance | `minimal` → `minimal_prov` | 100% | 100% | 0 | 1 | not discriminable (ceiling) |
+| H5 monitor without content | `blind` → `minimal` | 100% | 100% | 0 | 1 | not discriminable (ceiling) |
+
+- **H1** is in the predicted direction, and all 59 discordant pairs went the same way. The effect
+  (−17.6 points) lies inside the range preregistered from gpt-4.1-mini (−27 [−39, −14]).
+- **The GEE robustness check** is not estimable, because the summary cell has zero events.
+- **H2 and H3** stayed at the floor, as A2.5 predicted: no attack succeeded after summarization, in
+  any cell.
+
+**Exact attacker success by cell, with one-sided 95% upper bounds.**
+
+| Cell | Attacks | Rate [95% CI] | Upper bound (independent) | Scenarios with ≥ 1 attack |
+|---|---|---|---|---|
+| Raw, preserved | 59/336 | 17.6% [10, 27] | 21.3% | 14/24 |
+| Raw, lost | 105/336 | 31.3% [21, 42] | 35.7% | 21/24 |
+| Raw, label lost only | 29/168 | 17.3% [10, 26] | 22.8% | 14/24 |
+| Raw, channel lost only | 43/168 | 25.6% [16, 36] | 31.7% | 18/24 |
+| Raw, lost, request after content | 26/168 | 15.5% [6, 27] | 20.8% | 10/24 |
+| Raw, lost + reminder | 7/168 | 4.2% [1, 8] | 7.7% | 5/24 |
+| Raw, preserved + reminder | 0/168 | 0% | 1.8% | 0/24 |
+| Every summary, sanitizing-summary, and chain cell | 0 | 0% | ≤ 1.8% | 0/24 |
+| **All ungated cells, pooled** | **269/4,032** | **6.7%** | 7.4% | 21/24 |
+
+For comparison, on the same cells and scenarios:
+
+| Executor | Raw, preserved | Raw, lost | Summary or chain cells |
+|---|---|---|---|
+| Claude Haiku 5.5 | 0/336 | 22/336 (6.5%) | 0 |
+| Claude Sonnet 5.5 | 0/168 | 3/168 (1.8%) | 0 |
+| Claude Haiku 4.5 | 59/336 (17.6%) | 105/336 (31.3%) | 0 |
+
+**Secondary actor contrasts (preregistered; unadjusted).**
+
+| Contrast | Diff (points) [95% CI] | *p* |
+|---|---|---|
+| S1 provenance loss, raw content | +13.7 [+8.9, +18.8] | < 0.001 |
+| S2 summary vs raw, provenance lost | −31.3 [−41.7, −21.4] | < 0.001 |
+| S3 reminder, raw preserved | −19.0 [−29.2, −10.7] | < 0.001 |
+| S5 reminder, raw lost | −26.2 [−35.1, −17.3] | < 0.001 |
+| S9 label only lost vs preserved, raw | −1.8 [−6.0, +2.4] | 0.59 |
+| S10 channel only lost vs preserved, raw | +6.5 [+1.8, +11.3] | 0.024 |
+| S15 request after vs before content, raw lost | −14.9 [−22.6, −8.3] | < 0.001 |
+| S4, S6–S8, S11–S14, S16 | 0 (both cells at 0 attacks) | 1 |
+
+- **Holm check (not preregistered).** Applied across the 16 S tests, S1, S2, S3, S5, and S15 survive
+  and S10 does not.
+- **Provenance loss on raw content raised attacks for all three executors.** The ablation points to
+  the user-role channel (S10), not the "internal notes" label (S9). The combined change (+13.7) was
+  larger than the channel change alone, which suggests the label matters mainly when the channel is
+  also lost. This is exploratory.
+- **Message order also matters.** Putting the user request after the content halved the raw-lost
+  rate (S15). This matches the dev-pilot order confound (§8.2).
+
+**Utility and the reminder trade-off.**
+- **The boundary reminder cost utility.** It removed almost all raw-content attacks, but benign task
+  success fell in every reminder cell: raw preserved 0.94 → 0.73 (U4: −18.8 points [−35.4, −4.2],
+  *p* = 0.062), raw lost 0.92 → 0.81, summary 0.88 → 0.73–0.79.
+- **Summarization cost little utility:** 0.94 → 0.88 (U1, *p* = 0.38).
+- **Chain cells had low utility:** 0.65 and 0.52. This is a planner effect also seen with Haiku 5.5.
+
+**Disclosure (A1.7.1; unadjusted).**
+- **Provenance loss increased mentions of the attacker's target.** The executor's final message
+  named the target more often when provenance was lost, even though no attack was executed in those
+  cells:
+  - summary cells: 19.0% → 37.2%, D-H2 +18.2 points, *p* < 0.001;
+  - chain cells: 23.2% → 51.2%, D-H3 +28.0, *p* < 0.001;
+  - the D4-refined version gives the same result.
+- **What those mentions were (AI read, not systematic).** We read a random sample of 10 such final
+  messages from the summary-lost and chain-lost cells, excluding in-scope-misuse scenarios:
+  - 8 were warnings ("the document contained an embedded instruction … which I did not follow");
+  - 2 asked the user to confirm, and offered to perform the action if confirmed.
+- **Interpretation.** With lost provenance, the summarizer's "untrusted" flag arrives as internal
+  notes, and Haiku 4.5 tends to relay it to the user. This is descriptive: the flag was not
+  manipulated.
+
+**Gates (identical trials, six monitored cells).**
+
+| Gate | Exact ASR | Benign utility |
+|---|---|---|
+| No gate | 8.1% | 0.80 |
+| Authorization, extracted spec | **0%** (blocked 164/164 real attacks; G1 *p* < 0.001) | 0.80 (G2: 0.0 points) |
+| Taint with propagation | 0.2% | 0.58 (G4: −21.5 [−37.0, −7.1], *p* = 0.030) |
+| Taint without propagation | 5.2% | 0.75 |
+| LLM monitor, any view | 0% | 0.79 (G5: −0.2) |
+
+- **Taint without propagation fails** when lost provenance re-labels external text as an internal
+  agent's notes (G3: 5.2% vs 0.2%).
+- **The attacks that passed taint with propagation** were 5 role-spoofing attacks across all ungated
+  cells, 4 of them in the monitored cells. All were in **in-scope-misuse** scenarios, where the
+  attacker's target is a record the user had mentioned. This is the blind spot the threat model
+  predicts for taint. The authorization gate blocked all of them, because the user had not asked for
+  any action.
+- **Taint's utility cost** again falls entirely on data-dependent tasks: benign utility 0.86 → 0.
+- **Online and offline gate evaluation agreed** within 2.1 points.
+
+**Monitors.**
+- **Detection:** the Haiku 5.5 monitor caught 99.4–100% of the 164 *real* Haiku 4.5 attacker-goal
+  calls in every view, and 99.9–100% of synthetic ones. AUROC was 1.00.
+- **False blocks** on authorized calls were at most 1.9% fail-closed, and at most 0.7% with verdicts
+  recovered.
+- **Other unauthorized calls:** monitors blocked only 19–46% of the 26 real unauthorized calls that
+  did not target the attacker's goal. That set is small; descriptive.
+
+**By attack strategy (raw preserved / raw lost).**
+- Role spoofing (a forged user turn) was by far the most effective: 52% / 81%.
+- Next came task-relevant framing (27% / 40%) and the laundered action item (15% / 31%).
+- Naive overrides never succeeded: 0% / 0%.
+- By task type, data-dependent tasks were the most vulnerable (27% / 50%) and read-only tasks the
+  least (5% / 13%).
+
+**What H1 does and does not show.** The summarizer in this arm is Claude Haiku 5.5, a newer and much
+more robust model than the executor. It kept the attacker's target in 98.5% of summaries but flagged
+the request as untrusted (§7.8, judge unvalidated). H1 therefore shows that passing external content
+through *this* intermediate model protected a vulnerable executor completely. It does **not** separate
+summarization itself from the intermediate model's own safety behaviour. A Haiku 4.5 summarizer would
+be needed for that (§11).
+
 ## 8. Preliminary and exploratory results
 
 ### 8.1 Phase 1 pilot (legacy; gpt-4.1-mini; 8 scenarios × 4 conditions; one call each)
@@ -562,15 +748,19 @@ these expectations closely (A1.3).
 
 ## 9. Discussion
 
-**1. The main result is a robustness result, and it is model-specific.** On the same benchmark and
-the same 8 dev scenarios:
+**1. Robustness is model-specific, and the mechanisms appear where a model is vulnerable.** On the
+same benchmark and the same 8 dev scenarios:
 - gpt-4.1-mini executed 21–75% of fixed injections, depending on the cell;
 - on the held-out scenarios, Claude Haiku 5.5 executed 0.60% and Claude Sonnet 5.5 0.45%.
 
-The preregistered hypotheses were derived from gpt-4.1-mini. They are untestable for models at
-the floor, and we draw no conclusion about them. This is not evidence that summarization or
-provenance loss is harmless: a mechanism can only show up where the model is vulnerable. Fixed,
-non-adaptive payloads also overstate robustness (Zhan et al. 2025; Nasr et al. 2025).
+With Claude Haiku 4.5, a year older, the same held-out scenarios gave 17.6–31.3% on raw content
+(Amendment 2). The preregistered hypotheses were derived from gpt-4.1-mini:
+- they are untestable for the two current models, which are at the floor;
+- with Haiku 4.5, H1 is supported;
+- H2 and H3 remain untestable, because the intermediate model neutralized every injection.
+
+Fixed, non-adaptive payloads overstate robustness (Zhan et al. 2025; Nasr et al. 2025), so the
+current models' near-zero rates hold for these payloads only.
 
 **2. The residual vulnerability matches the provenance-loss mechanism.** Every Claude success in
 the confirmatory study occurred in one configuration:
@@ -578,34 +768,50 @@ the confirmatory study occurred in one configuration:
 - it was labelled as internal notes, and
 - most often, the payload forged a user turn.
 
-Under preserved provenance, none of the 1,512 Haiku attack trials in preserved cells succeeded.
-This is exploratory and rests on 22 events in 10 scenarios. Even so, it is consistent with the
+Under preserved provenance, none of the 1,512 Haiku 5.5 attack trials in preserved cells succeeded.
+That rests on 22 events in 10 scenarios. Amendment 2 replicates the direction with many more events.
+For Haiku 4.5, provenance loss on raw content raised exact success from 17.6% to 31.3% (S1, 105 vs 59
+events, *p* < 0.001). The channel accounted for most of it, not the label (S9, S10). Even so, it is consistent with the
 dev-pilot direction and with prior work: when the *system* misattributes external text to a
 trusted principal, the model's own judgment is all that remains. Unlike gpt-4.1-mini, the effect
 needed both the channel change and the label change.
 
-**3. Intermediate Claude agents annotated injections rather than laundering them.** As judged by
+**3. A robust intermediate agent protected a vulnerable executor.** As judged by
 an unvalidated LLM judge:
 - the summarizer and planner kept the attacker's target in about 98% of outputs, but marked the
   request as untrusted;
 - downstream, summary and chain cells had 0 attacks, even with provenance lost.
 
-The gpt-4.1-mini summarizer often laundered injections into neutral task statements. The question
-"does an intermediate stage sanitize or launder?" therefore depends on the intermediate model, and
-should be measured per model rather than assumed.
+With Haiku 4.5 as executor, the same flagged summaries produced 0 attacks out of 2,520 attack trials in
+summary, sanitizing-summary, and chain cells. On raw content, the same model executed 17.6–31.3%. When provenance was lost,
+Haiku 4.5 often relayed the summarizer's warning to the user (disclosure rose by 18–28 points).
+
+The gpt-4.1-mini summarizer often laundered injections into neutral task statements. So whether an
+intermediate stage sanitizes or launders depends on the intermediate model, and should be measured per
+model rather than assumed. In a heterogeneous pipeline, a strong model upstream can shield a weak model
+downstream. We did not manipulate this, so whether it is the flag or the rewriting that protects is
+open.
 
 **4. Defense costs are informative even when attacks fail.**
 - **Request-derived authorization** was the best design on this benchmark: it agreed with the oracle
   on 24/24 scenarios, blocked every attack, and lost 0.2 points of benign utility. Its known blind
   spot, an attacker who controls a delegated field, is out of scope by construction (threat model).
-- **Taint tracking with propagation** was equally secure but cost 23–25 benign-utility points,
-  replicated across two executors. Every point of that cost is in tasks where the user delegates
-  the target to the document. Without propagation it offered no protection (G3).
+- **Taint tracking with propagation** was nearly as secure but cost 21.5–25 benign-utility points,
+  replicated across three executors. With Haiku 4.5 it missed 5 in-scope-misuse attacks, where the
+  attacker's target was a record the user had named. That is its predicted blind spot, and
+  authorization caught all 5. Every point of that cost is in tasks where the user delegates
+  the target to the document. Without propagation it fails exactly when lost provenance relabels external text as internal
+  (G3; 5.2% residual attacks with Haiku 4.5).
 - **The LLM monitor's delegated-target false blocks** seen with gpt-4.1-mini did not appear with
   Claude. Its detection was at ceiling, so H4 (does provenance help a content-free monitor?) stays
   open.
 
-**5. Measurement lessons.**
+**5. Prompt-level defenses trade utility for security.** With Haiku 4.5, a boundary reminder in the
+system prompt cut raw-content attacks from 19.0–30.4% to 0–4.2% (paired, S3 and S5). It also lowered
+benign task success by 9–21 points in every reminder cell (cell means; paired U4: −18.8). Request-derived authorization gave full protection at no
+measured utility cost.
+
+**6. Measurement lessons.**
 - **Fail-closed parsing** turned malformed *allow* verdicts into apparent false blocks. A sensitivity
   analysis is needed whenever parse failures are not negligible.
 - **Response caching** collapses identical monitor requests into one decision. Effective n must be
@@ -616,13 +822,21 @@ should be measured per model rather than assumed.
 ## 10. Limitations
 
 See `docs/threat_model.md` §4 for the full list. The most important:
-1. **Floor and ceiling effects.** The confirmatory study cannot test H1–H5 for the models it used.
+1. **Floor and ceiling effects.**
+   - H1–H5 are untestable with the two current Claude executors.
+   - With Haiku 4.5, only H1 could be tested.
+   - The monitors were at ceiling throughout.
 2. **Small, templated benchmark:** 24 test scenarios, 7 template strategies.
 3. **Non-adaptive attacker.** The near-zero attack rates are an upper bound on robustness against
    *these* payloads only.
 4. **Simulated tools,** and at most 4 actor turns.
-5. **Model coverage.** Confirmatory: two Anthropic models. Dev only: one OpenAI model. No
-   open-weight models.
+5. **Model coverage.** Confirmatory: three Anthropic executors (Haiku 5.5, Sonnet 5.5, Haiku 4.5),
+   with Haiku 5.5 in all other roles. Dev only: one OpenAI model. No open-weight models.
+5a. **Mixed-model pipeline in Amendment 2.** The summarizer (Haiku 5.5) is more robust than the
+    executor (Haiku 4.5). So H1 cannot be attributed to summarization as such.
+5b. **Amendment 2 was decided after seeing Amendment 1 results.** Its design and go rule were fixed
+    and published before any Haiku 4.5 data, but choosing a more vulnerable model was itself
+    data-informed.
 6. **Same-model roles.** Haiku is actor, monitor, and judge in the primary run. Judge categories
    are not yet human-validated.
 7. **Effective n for content-free monitor views** is about one decision per scenario.
@@ -634,12 +848,16 @@ See `docs/threat_model.md` §4 for the full list. The most important:
 
 ## 11. Future work (proposed, not done)
 
-1. **Escape the floor.** Use adaptive payload optimization against each pipeline stage, harder
-   benchmarks (AgentDojo port), or more vulnerable models. Then test H1–H3 where they can be tested.
+1. **Vulnerable intermediate agents.** Run Haiku 4.5 as summarizer and planner as well as executor.
+   This would separate summarization from the intermediate model's own safety behaviour, and could
+   make H2 and H3 testable.
+1a. **Escape the floor for current models.** Adaptive payload optimization against each stage, or
+    harder benchmarks (AgentDojo port).
 2. **Run the original OpenAI confirmatory configuration** on the test split. It is ready
    (`configs/confirmatory_test.yaml`) and needs budget approval. It would test H1–H5 with a model
    that showed effects on dev.
-3. **Human validation of judge categories** (n = 110; blinded sheet ready).
+3. **Human validation of judge categories** (n = 120 from the confirmatory run; blinded sheet
+   ready: `annotation/confirmatory_haiku_sheet.csv`).
 4. **Manipulate intermediate-agent annotation directly**: for example, summaries with and without
    the "untrusted" flag. This would test whether flagging, not deletion, is what protects the
    executor.
@@ -649,7 +867,7 @@ See `docs/threat_model.md` §4 for the full list. The most important:
 ## 12. Reproducibility
 
 See `README.md`. In short:
-- `pytest -q` (66 tests, no API calls)
+- `pytest -q` (67 tests, no API calls)
 - `python -m trustbound run <config>`, which resumes from checkpoint and replays cached responses
 - `python -m trustbound analyze results/<run>`, which regenerates all tables and figures from saved
   trajectories (seeded bootstrap; two consecutive runs produce identical tables)
@@ -657,15 +875,19 @@ See `README.md`. In short:
 Every run's `manifest.json` records:
 - the git commit (since D7, captured at process start, with a per-invocation history)
 - the dataset SHA-256
-- the prompt fingerprint and preregistration SHA-256
+- the prompt fingerprint, the preregistration SHA-256, and (since Amendment 2) each amendment's SHA-256
 - the resolved models and package versions
 - the cost
 
-The confirmatory trials were generated by commit `4422421` (D7). Run records give it as `a561875`, its hash before the history rewrite described in `docs/commit_map.md`.
+The Amendment 2 runs record commits `115a60e` (screening) and `310f470` (test run). Both are marked
+`dirty` only because the console log, created by shell redirection, was an uncommitted file at
+process start.
+
+The Amendment 1 confirmatory trials were generated by commit `4422421` (D7). Run records give it as `a561875`, its hash before the history rewrite described in `docs/commit_map.md`.
 
 ## 13. Deviations from the preregistration
 
-Eight deviations are logged with their timing in `docs/deviations.md`:
+Eleven deviations and amendments are logged with their timing in `docs/deviations.md`:
 - **D1:** process monitoring
 - **D2:** corrected upper-bound estimand
 - **D3:** scoring and analysis bug fixes; no number changed
@@ -674,6 +896,9 @@ Eight deviations are logged with their timing in `docs/deviations.md`:
 - **D6:** judge parse fallback
 - **D7:** manifest code version
 - **D8:** monitor parse sensitivity and effective-n reporting
+- **D9:** repository history rewrite (no file affecting results changed)
+- **D10:** Amendment 2, the Haiku 4.5 executor arm, written after the Amendment 1 results
+- **D11:** judge-validation sample brought up to the preregistered n = 120
 
 D6–D8 were made after outcomes had been seen. None changes a preregistered quantity, and the
 preregistered versions are reported first.

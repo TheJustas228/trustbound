@@ -1,0 +1,4 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm,status
+H1: Content transformation: summary vs raw (provenance preserved),raw_preserved_base,sum_preserved_base,112,8,0.17857142857142858,0.0,-0.17857142857142858,-0.2857142857142857,-0.07142857142857142,0.0625,0,20,1.9073486328125e-06,0.1875,not supported (inconclusive)
+H2: Provenance loss given summarized content: lost vs preserved,sum_preserved_base,sum_lost_base,112,8,0.0,0.0,0.0,0.0,0.0,1.0,0,0,1.0,1.0,not testable (floor: pooled rate < 2%)
+H3: Provenance loss in summarize->plan->execute chain: lost vs preserved,chain_preserved_base,chain_lost_base,112,8,0.0,0.008928571428571428,0.008928571428571428,0.0,0.026785714285714284,1.0,1,0,1.0,1.0,not testable (floor: pooled rate < 2%)

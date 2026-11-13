@@ -30,3 +30,16 @@ fix occurred:
 
 **No reported number changed because of D3.** After D6, `scores.csv` was regenerated once more. Scores
 do not use judge labels, so they are unchanged.
+
+## Amendment 2 run notes
+
+- **Manifests marked `dirty`.** Both Amendment 2 manifests (`results/screen_dev_claude_haiku45_actor/`,
+  `results/confirmatory_test_claude_haiku45_actor/`) record `dirty: true`. The only uncommitted file at
+  process start was the run's console log (`results/*.console.log`), which shell redirection creates
+  before Python starts. So the code is exactly commit `115a60e` (screening) and `310f470` (test run).
+  Each manifest also records `preregistration_amendments_sha256` for `PREREGISTRATION_AMENDMENT_2.md`.
+- **Go rule (A2.3):** GO, with an H1 cell-pair mean of 8.9% on dev (`go_rule.txt`).
+- **Budget (A2.4):** projected $26.33, actual $20.75, ceiling $30.
+- **Figure 5 x-axis labels were shortened to stop them overlapping.** This is presentation only, and
+  regenerating the other runs' analyses produced the same tables.
+

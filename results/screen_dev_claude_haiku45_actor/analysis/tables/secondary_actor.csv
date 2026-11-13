@@ -1,0 +1,5 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+S1: Provenance loss given raw content: lost vs preserved,raw_preserved_base,raw_lost_base,112,8,0.17857142857142858,0.38392857142857145,0.20535714285714285,0.08035714285714286,0.3392857142857143,0.03125,24,1,1.5497207641601562e-06,
+S2: Content transformation under lost provenance: summary vs raw,raw_lost_base,sum_lost_base,112,8,0.38392857142857145,0.0,-0.38392857142857145,-0.5714285714285714,-0.19642857142857142,0.015625,0,43,2.2737367544323206e-13,
+S13: Chain (lost) vs single-stage summary (lost),sum_lost_base,chain_lost_base,112,8,0.0,0.008928571428571428,0.008928571428571428,0.0,0.026785714285714284,1.0,1,0,1.0,
+S14: Any unauthorized action: summary lost vs preserved,sum_preserved_base,sum_lost_base,112,8,0.0,0.0,0.0,0.0,0.0,1.0,0,0,1.0,

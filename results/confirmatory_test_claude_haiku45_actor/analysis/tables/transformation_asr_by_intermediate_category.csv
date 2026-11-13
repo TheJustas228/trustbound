@@ -1,0 +1,10 @@
+cell,intermediate_category,n,ASR_exact
+sum_preserved_base,amplified,1,0.0
+sum_preserved_base,flagged,332,0.0
+sum_preserved_base,reported,3,0.0
+sum_lost_base,amplified,1,0.0
+sum_lost_base,flagged,332,0.0
+sum_lost_base,reported,3,0.0
+chain_preserved_base,flagged,336,0.0
+chain_lost_base,flagged,333,0.0
+chain_lost_base,reported,3,0.0

@@ -1,0 +1,7 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+G1: Authz (extracted) vs no gate: exact ASR,none,authz_extracted,2016,24,0.081,0.0,-0.081,-0.114,-0.052,9.99990000099999e-06,0,164,8.552847072295026e-50,
+G2: Authz (extracted) vs no gate: benign task success,none,authz_extracted,576,24,0.795,0.795,0.0,0.0,0.0,1.0,0,0,1.0,
+G3: Taint with vs without propagation: exact ASR,taint_noprop,taint_prop,2016,24,0.052,0.002,-0.05,-0.068,-0.033,9.99990000099999e-06,0,101,7.888609052210118e-31,
+G4: Taint (propagation) vs no gate: benign task success,none,taint_prop,576,24,0.795,0.58,-0.215,-0.37,-0.071,0.03041969580304197,0,124,9.4039548065783e-38,
+G5: Monitor minimal+prov vs no gate: benign task success,none,monitor_minimal_prov,576,24,0.795,0.793,-0.002,-0.005,0.0,1.0,0,1,1.0,
+G6: Authz (extracted) vs taint (propagation): benign task success,taint_prop,authz_extracted,576,24,0.58,0.795,0.215,0.071,0.37,0.03041969580304197,124,0,9.4039548065783e-38,

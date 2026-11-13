@@ -1,0 +1,4 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+U1: Utility: summary vs raw (preserved),raw_preserved_base,sum_preserved_base,32,8,1.0,1.0,0.0,0.0,0.0,1.0,0,0,1.0,
+U2: Utility: lost vs preserved (summary),sum_preserved_base,sum_lost_base,32,8,1.0,1.0,0.0,0.0,0.0,1.0,0,0,1.0,
+U3: Utility: chain lost vs preserved,chain_preserved_base,chain_lost_base,32,8,0.96875,0.75,-0.21875,-0.59375,0.0625,0.5,1,8,0.0390625,

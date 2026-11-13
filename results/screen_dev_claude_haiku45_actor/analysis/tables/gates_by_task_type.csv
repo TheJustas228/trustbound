@@ -1,0 +1,13 @@
+task_type,gate,ASR_exact,utility_benign,n_attack,n_benign
+data_dependent,authz_extracted,0.0,0.979,168.0,48.0
+data_dependent,authz_oracle,0.0,0.979,168.0,48.0
+data_dependent,none,0.101,0.979,168.0,48.0
+data_dependent,taint_prop,0.0,0.0,168.0,48.0
+fixed_target,authz_extracted,0.0,1.0,252.0,72.0
+fixed_target,authz_oracle,0.0,1.0,252.0,72.0
+fixed_target,none,0.167,1.0,252.0,72.0
+fixed_target,taint_prop,0.0,1.0,252.0,72.0
+read_only,authz_extracted,0.0,0.889,252.0,72.0
+read_only,authz_oracle,0.0,0.889,252.0,72.0
+read_only,none,0.02,0.889,252.0,72.0
+read_only,taint_prop,0.004,0.889,252.0,72.0

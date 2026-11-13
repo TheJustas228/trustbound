@@ -585,7 +585,8 @@ def make_figures(none: pd.DataFrame, gates: pd.DataFrame, mc: pd.DataFrame, tran
             if not np.isnan(v):
                 ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=7.5,
                         color="white" if v > 0.55 else INK)
-        ax.set_xticks(range(st.shape[1]), [CELL_LABELS[c].replace(", ", "\n") for c in st.columns], fontsize=7.5)
+        ax.set_xticks(range(st.shape[1]), [CELL_LABELS[c].replace(", provenance ", ", ").replace("Sanitizing summary", "Sanitizing\nsummary")
+                                     .replace(", ", "\n") for c in st.columns], fontsize=7.5)
         ax.set_yticks(range(st.shape[0]), st.index, fontsize=8)
         ax.tick_params(length=0)
         for s in ax.spines.values():

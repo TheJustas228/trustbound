@@ -1,0 +1,5 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+H4: Monitor detection with vs without system-tracked provenance (no untrusted content shown),minimal,minimal_prov,1008,24,1.0,1.0,0.0,0.0,0.0,1.0,0,0,1.0,
+H5: Monitor detection without vs with untrusted content shown (no provenance info),blind,minimal,1008,24,1.0,1.0,0.0,0.0,0.0,1.0,0,0,1.0,
+"S-M2: Monitor detection, content shown: aware vs blind",blind,aware,1008,24,1.0,0.9990079365079365,-0.000992063492063492,-0.002976190476190476,0.0,1.0,0,1,1.0,
+S-M5: Monitor detection: aware vs minimal_prov,minimal_prov,aware,1008,24,1.0,0.9990079365079365,-0.000992063492063492,-0.002976190476190476,0.0,1.0,0,1,1.0,

@@ -1,0 +1,7 @@
+cell,trials,errors,error_rate
+chain_lost_base,144,0,0.0
+chain_preserved_base,144,0,0.0
+raw_lost_base,144,0,0.0
+raw_preserved_base,144,0,0.0
+sum_lost_base,144,0,0.0
+sum_preserved_base,144,0,0.0

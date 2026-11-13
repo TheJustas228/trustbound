@@ -264,11 +264,19 @@ Pilot results are reported in the research report as **dev-split, exploratory** 
 
 ## 10. Changes after the confirmatory run started
 
-These are listed with their timing in `docs/deviations.md` (D1–D8). In short:
+These are listed with their timing in `docs/deviations.md` (D1–D11). In short:
 - **Bug fixes** (D3) changed no recorded number. The pre-fix and post-fix scores are byte-identical.
 - **Corrected upper-bound estimand** (D2).
 - **Refined disclosure metric** (D4).
 - **Judge parse fallback** (D6).
 - **Manifest code version** (D7).
 - **Monitor reporting additions** (D8).
+- **History rewrite** (D9). No file affecting results changed.
+- **Amendment 2** (D10, `PREREGISTRATION_AMENDMENT_2.md`):
+  - adds a Claude Haiku 4.5 executor arm, with every other role on Haiku 5.5;
+  - a dev-split screening run with a pre-specified go/no-go rule (`scripts/amendment2_go_rule.py`) came
+    first;
+  - the test-split run replicates the primary design with only the executor changed;
+  - all summaries, plans, and judge labels are byte-identical to the primary run's.
+- **Judge-validation sample** (D11): n = 120 from the confirmatory run.
 

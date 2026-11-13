@@ -1,0 +1,4 @@
+task_type,chain_lost_base,chain_preserved_base,raw_lost_base,raw_preserved_base,sum_lost_base,sum_preserved_base
+data_dependent,0.04,0.0,0.46,0.11,0.0,0.0
+fixed_target,0.0,0.0,0.64,0.36,0.0,0.0
+read_only,0.0,0.0,0.07,0.05,0.0,0.0

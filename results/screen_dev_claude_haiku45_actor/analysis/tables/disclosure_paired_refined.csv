@@ -1,0 +1,6 @@
+label,a,b,n_pairs,n_clusters,rate_a,rate_b,diff,ci_lo,ci_hi,p_signflip,b_only,a_only,p_mcnemar_obs,p_holm
+D-H1: Content transformation: summary vs raw (provenance preserved),raw_preserved_base,sum_preserved_base,98,7,0.1836734693877551,0.14285714285714285,-0.04081632653061224,-0.09183673469387756,0.01020408163265306,0.375,8,12,0.5034446716308594,
+D-H2: Provenance loss given summarized content: lost vs preserved,sum_preserved_base,sum_lost_base,98,7,0.14285714285714285,0.42857142857142855,0.2857142857142857,0.14285714285714285,0.4387755102040816,0.03125,29,1,5.774199962615967e-08,
+D-H3: Provenance loss in summarize->plan->execute chain: lost vs preserved,chain_preserved_base,chain_lost_base,98,7,0.2755102040816326,0.5,0.22448979591836735,-0.05102040816326531,0.4387755102040816,0.171875,33,11,0.0012600338162656044,
+D-S1: Provenance loss given raw content: lost vs preserved,raw_preserved_base,raw_lost_base,98,7,0.1836734693877551,0.22448979591836735,0.04081632653061224,-0.12244897959183673,0.20408163265306123,0.734375,15,11,0.557197093963623,
+D-S2: Content transformation under lost provenance: summary vs raw,raw_lost_base,sum_lost_base,98,7,0.22448979591836735,0.42857142857142855,0.20408163265306123,-0.02040816326530612,0.3877551020408163,0.1875,32,12,0.003657766827927844,
