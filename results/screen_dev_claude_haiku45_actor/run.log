@@ -1,0 +1,5 @@
+{"ts":"2026-11-13 02:43:57,672","level":"INFO","logger":"trustbound.runner","msg":'stage authz starting'}
+{"ts":"2026-11-13 02:43:57,691","level":"INFO","logger":"trustbound.runner","msg":'stage actors starting'}
+{"ts":"2026-11-13 02:49:18,937","level":"INFO","logger":"trustbound.runner","msg":'stage monitors starting'}
+{"ts":"2026-11-13 02:49:18,946","level":"INFO","logger":"trustbound.runner","msg":'stage judge starting'}
+{"ts":"2026-11-13 02:49:18,954","level":"INFO","logger":"trustbound.runner","msg":'stage score starting'}

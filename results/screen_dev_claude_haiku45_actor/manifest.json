@@ -1,0 +1,334 @@
+{
+  "name": "screen_dev_claude_haiku45_actor",
+  "description": "Amendment 2 screening (dev split), actor Claude Haiku 4.5, six core cells, k = 2.",
+  "status": "finished",
+  "updated_at": "2026-11-13T02:49:19+0100",
+  "trustbound_version": "2.0.0",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "packages": {
+    "openai": "3.49.0",
+    "anthropic": "2.8.0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "pandas": "3.1.1",
+    "statsmodels": "0.15.0",
+    "matplotlib": "3.11.2",
+    "pyyaml": "6.0.3"
+  },
+  "git": {
+    "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+    "dirty": true
+  },
+  "config": {
+    "name": "screen_dev_claude_haiku45_actor",
+    "description": "Amendment 2 screening (dev split), actor Claude Haiku 4.5, six core cells, k = 2.",
+    "split": "dev",
+    "samples": 2,
+    "max_turns": 4,
+    "concurrency": 8,
+    "budget_usd": 6.0,
+    "judge": false,
+    "token_estimates": {
+      "actor": [
+        1300,
+        400
+      ],
+      "summarizer": [
+        700,
+        450
+      ],
+      "planner": [
+        700,
+        500
+      ],
+      "authz": [
+        600,
+        300
+      ]
+    },
+    "models": {
+      "actor": {
+        "provider": "anthropic",
+        "model": "claude-haiku-4-5",
+        "temperature": null,
+        "reasoning_effort": null,
+        "max_tokens": 4000
+      },
+      "summarizer": {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 2000
+      },
+      "planner": {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 2000
+      },
+      "authz": {
+        "provider": "anthropic",
+        "model": "claude-haiku-5-5",
+        "temperature": null,
+        "reasoning_effort": "medium",
+        "max_tokens": 2000
+      }
+    },
+    "cells": [
+      "raw_preserved_base",
+      "sum_preserved_base",
+      "raw_lost_base",
+      "sum_lost_base",
+      "chain_preserved_base",
+      "chain_lost_base"
+    ],
+    "monitor_cells": []
+  },
+  "models": {
+    "actor": {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "temperature": null,
+      "max_tokens": 4000,
+      "reasoning_effort": null
+    },
+    "summarizer": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "temperature": null,
+      "max_tokens": 2000,
+      "reasoning_effort": "medium"
+    },
+    "planner": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "temperature": null,
+      "max_tokens": 2000,
+      "reasoning_effort": "medium"
+    },
+    "monitor": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 200,
+      "reasoning_effort": null
+    },
+    "judge": {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "temperature": 0.0,
+      "max_tokens": 200,
+      "reasoning_effort": null
+    },
+    "authz": {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "temperature": null,
+      "max_tokens": 2000,
+      "reasoning_effort": "medium"
+    }
+  },
+  "cells": {
+    "raw_preserved_base": {
+      "name": "raw_preserved_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "sum_preserved_base": {
+      "name": "sum_preserved_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "raw_lost_base": {
+      "name": "raw_lost_base",
+      "pipeline": "single",
+      "content": "raw",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "sum_lost_base": {
+      "name": "sum_lost_base",
+      "pipeline": "single",
+      "content": "summary",
+      "channel": "user",
+      "label": "internal",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "chain_preserved_base": {
+      "name": "chain_preserved_base",
+      "pipeline": "chain",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "preserved",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    },
+    "chain_lost_base": {
+      "name": "chain_lost_base",
+      "pipeline": "chain",
+      "content": "raw",
+      "channel": "tool",
+      "label": "external",
+      "provenance": "lost",
+      "prompt": "baseline",
+      "gate": "none",
+      "order": "request_first"
+    }
+  },
+  "dataset": {
+    "cases_sha256": "50c7a8fc0dbcb6d47712d88e0944ab03ea5e32ba8cea1e29c6fa58fac22f8514",
+    "scenarios_sha256": "15b2ecdb1e6a5967ced7571a405f9cbffeb7d89a70a8f679d891762fc74062be",
+    "n_cases_selected": 72
+  },
+  "prompt_fingerprint": "494df7c05d7c1f07f927f4de37caf32eb92184607ceaf2a1fad53252eb49029e",
+  "pricing_source": "OpenAI: https://developers.openai.com/api/docs/pricing (retrieved 2026-11-12); Anthropic: Claude API pricing table (claude-api skill, cached 2026-11-03)",
+  "budget_this_invocation": {
+    "ceiling_usd": 6.0,
+    "spent_usd": 2.823551,
+    "n_paid_calls": 1546,
+    "input_tokens": 2107187,
+    "output_tokens": 249461
+  },
+  "preregistration_sha256": "a05c8699f1fc8f7af0e904ba3b1a1ee307835721395bb0102c54109174ba5a67",
+  "preregistration_amendments_sha256": {
+    "PREREGISTRATION_AMENDMENT_2.md": "fb8bd8e5907c8b561e40b760c699e87a6e0e5d2870acc759484730af57682bcd"
+  },
+  "history": [
+    {
+      "status": "started",
+      "at": "2026-11-13T02:43:57+0100",
+      "stages": [
+        "authz",
+        "actors",
+        "monitors",
+        "judge",
+        "score"
+      ],
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:authz",
+      "at": "2026-11-13T02:43:57+0100",
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 0.0,
+        "n_paid_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0
+      }
+    },
+    {
+      "status": "completed:actors",
+      "at": "2026-11-13T02:49:18+0100",
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 2.823551,
+        "n_paid_calls": 1546,
+        "input_tokens": 2107187,
+        "output_tokens": 249461
+      }
+    },
+    {
+      "status": "completed:monitors",
+      "at": "2026-11-13T02:49:18+0100",
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 2.823551,
+        "n_paid_calls": 1546,
+        "input_tokens": 2107187,
+        "output_tokens": 249461
+      }
+    },
+    {
+      "status": "completed:judge",
+      "at": "2026-11-13T02:49:18+0100",
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 2.823551,
+        "n_paid_calls": 1546,
+        "input_tokens": 2107187,
+        "output_tokens": 249461
+      }
+    },
+    {
+      "status": "completed:score",
+      "at": "2026-11-13T02:49:19+0100",
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 2.823551,
+        "n_paid_calls": 1546,
+        "input_tokens": 2107187,
+        "output_tokens": 249461
+      }
+    },
+    {
+      "status": "finished",
+      "at": "2026-11-13T02:49:19+0100",
+      "git": {
+        "commit": "115a60e12d2f3b907ad6413c9b8ff8e4324b39b5",
+        "dirty": true
+      },
+      "budget": {
+        "ceiling_usd": 6.0,
+        "spent_usd": 2.823551,
+        "n_paid_calls": 1546,
+        "input_tokens": 2107187,
+        "output_tokens": 249461
+      }
+    }
+  ]
+}

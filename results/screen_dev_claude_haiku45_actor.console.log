@@ -1,0 +1,85 @@
+{
+  "estimate": {
+    "n_cases": 72,
+    "n_trials": 864,
+    "n_trials_todo": 864,
+    "by_role": {
+      "authz": {
+        "calls": 8,
+        "usd": 0.0017
+      },
+      "summarizer": {
+        "calls": 144,
+        "usd": 0.0425
+      },
+      "planner": {
+        "calls": 288,
+        "usd": 0.0922
+      },
+      "actor": {
+        "calls": 1469,
+        "usd": 4.847
+      },
+      "monitor": {
+        "calls": 0,
+        "usd": 0.0
+      },
+      "judge": {
+        "calls": 0,
+        "usd": 0.0
+      }
+    },
+    "estimated_usd_upper": 4.9834,
+    "note": "Upper-bound estimate assuming no cache hits; actual cost is metered per call."
+  },
+  "budget_usd": 6.0
+}
+[authz] 8/8  spent=$0.0000  elapsed=0s
+[actors] 864 trials to run (0 already stored)
+[actors] 25/864  spent=$0.0508  elapsed=8s
+[actors] 50/864  spent=$0.1110  elapsed=19s
+[actors] 75/864  spent=$0.1702  elapsed=27s
+[actors] 100/864  spent=$0.2294  elapsed=36s
+[actors] 125/864  spent=$0.2759  elapsed=42s
+[actors] 150/864  spent=$0.3203  elapsed=48s
+[actors] 175/864  spent=$0.3729  elapsed=54s
+[actors] 200/864  spent=$0.4162  elapsed=59s
+[actors] 225/864  spent=$0.4600  elapsed=65s
+[actors] 250/864  spent=$0.5049  elapsed=70s
+[actors] 275/864  spent=$0.5537  elapsed=77s
+[actors] 300/864  spent=$0.5988  elapsed=82s
+[actors] 325/864  spent=$0.6591  elapsed=91s
+[actors] 350/864  spent=$0.7717  elapsed=103s
+[actors] 375/864  spent=$0.8633  elapsed=114s
+[actors] 400/864  spent=$0.9662  elapsed=126s
+[actors] 425/864  spent=$1.0696  elapsed=138s
+[actors] 450/864  spent=$1.1748  elapsed=147s
+[actors] 475/864  spent=$1.2706  elapsed=157s
+[actors] 500/864  spent=$1.3659  elapsed=167s
+[actors] 525/864  spent=$1.4428  elapsed=177s
+[actors] 550/864  spent=$1.5468  elapsed=187s
+[actors] 575/864  spent=$1.6399  elapsed=196s
+[actors] 600/864  spent=$1.7448  elapsed=206s
+[actors] 625/864  spent=$1.8424  elapsed=216s
+[actors] 650/864  spent=$1.9548  elapsed=227s
+[actors] 675/864  spent=$2.0469  elapsed=236s
+[actors] 700/864  spent=$2.1512  elapsed=248s
+[actors] 725/864  spent=$2.2563  elapsed=260s
+[actors] 750/864  spent=$2.3540  elapsed=272s
+[actors] 775/864  spent=$2.4492  elapsed=281s
+[actors] 800/864  spent=$2.5559  elapsed=292s
+[actors] 825/864  spent=$2.6592  elapsed=302s
+[actors] 850/864  spent=$2.7668  elapsed=313s
+[actors] 864/864  spent=$2.8236  elapsed=321s
+[monitors] 0 monitor calls to run
+[score] wrote 4320 rows to /home/justas/Desktop/TrustBound_OpenAI_Starter/trustbound-starter/results/screen_dev_claude_haiku45_actor/scores.csv
+{
+  "budget": {
+    "ceiling_usd": 6.0,
+    "spent_usd": 2.823551,
+    "n_paid_calls": 1546,
+    "input_tokens": 2107187,
+    "output_tokens": 249461
+  },
+  "run_dir": "/home/justas/Desktop/TrustBound_OpenAI_Starter/trustbound-starter/results/screen_dev_claude_haiku45_actor"
+}
